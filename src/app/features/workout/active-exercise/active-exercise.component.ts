@@ -12,7 +12,7 @@ import { ExerciseQuestion } from '../../../core/models/cognitive.models';
 export class ActiveExerciseComponent implements OnDestroy {
   public question = input.required<ExerciseQuestion>();
   public isReviewMode = input<boolean>(false);
-  public autoShowHint = input<boolean>(false);
+  public hasSuggestedHint = input<boolean>(false);
   public onAnswer = output<{ answer: any; isTimeout?: boolean }>();
 
   // Estados Locais para Sequência e Grade
@@ -40,12 +40,11 @@ export class ActiveExerciseComponent implements OnDestroy {
   constructor() {
     effect(() => {
       const q = this.question();
-      const autoHint = this.autoShowHint();
-      this.resetExerciseState(q, autoHint);
+      this.resetExerciseState(q);
     });
   }
 
-  private resetExerciseState(q: ExerciseQuestion, autoHint: boolean): void {
+  private resetExerciseState(q: ExerciseQuestion): void {
     this.clearAllTimers();
     this.userSequenceInput.set('');
     this.selectedGridCells.set([]);
@@ -53,7 +52,9 @@ export class ActiveExerciseComponent implements OnDestroy {
     this.geniusCanInput.set(false);
     this.activeGeniusColor.set(null);
     this.disabledOptions.set([]);
-    this.hintVisible.set(autoHint);
+    
+    // Cada novo exercício SEMPRE inicia com a dica recolhida
+    this.hintVisible.set(false);
 
     // Configurar Barra de Tempo
     if (q.hasTimerBar && q.timeLimitSeconds && !this.isReviewMode()) {

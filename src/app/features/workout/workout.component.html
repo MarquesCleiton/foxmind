@@ -60,7 +60,7 @@
         <app-active-exercise 
           [question]="q" 
           [isReviewMode]="workout.state() === 'ERROR_REVIEW'"
-          [autoShowHint]="workout.naturalHintActive()"
+          [hasSuggestedHint]="workout.naturalHintActive()"
           (onAnswer)="onAnswerSubmitted($event)">
         </app-active-exercise>
       }

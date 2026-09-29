@@ -78,6 +78,14 @@
   border-color: var(--fox-primary);
 }
 
+.fox-hint-trigger-btn.suggested-pulse {
+  background: var(--fox-surface);
+  border: 1.5px solid var(--fox-primary);
+  color: #ffffff;
+  box-shadow: 0 0 16px var(--fox-glow);
+  animation: subtlePulse 1.8s infinite ease-in-out;
+}
+
 .fox-hint-bubble {
   width: 100%;
   background: rgba(249, 115, 22, 0.12);

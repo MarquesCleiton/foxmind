@@ -114,10 +114,8 @@ export class WorkoutService {
       this.feedback.set(null);
       this.sessionProgressPercent.set(Math.round((idx / this.questionsQueue.length) * 100));
       
-      // Se teve 2 erros seguidos, ativa a dica natural da Raposa
-      if (this.consecutiveErrors >= 2) {
-        this.naturalHintActive.set(true);
-      }
+      // Oferece destaque visual de ajuda da Raposa apenas se tiver 2 erros recentes
+      this.naturalHintActive.set(this.consecutiveErrors >= 2);
     } else {
       // Finalizou as questões principais -> verificar se há erros para revisão
       if (this.pendingErrors.length > 0) {

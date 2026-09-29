@@ -33,8 +33,16 @@
           <button class="hint-close-btn" (click)="toggleFoxHint()">✕</button>
         </div>
       } @else {
-        <button class="fox-hint-trigger-btn animate-fade-in" (click)="toggleFoxHint()">
-          <span>🦊</span> Precisa de uma dica?
+        <button 
+          class="fox-hint-trigger-btn animate-fade-in" 
+          [class.suggested-pulse]="hasSuggestedHint()"
+          (click)="toggleFoxHint()">
+          <span>🦊</span>
+          @if (hasSuggestedHint()) {
+            <span>Dica da Raposa disponível (Toque aqui)</span>
+          } @else {
+            <span>Precisa de uma dica?</span>
+          }
         </button>
       }
     </div>
