@@ -89,15 +89,15 @@ export class ActiveExerciseComponent implements OnDestroy {
       this.allOrderingNumbers.set([...(q.data?.numbers || [])]);
     }
 
-    // Para testes de memorização (Item 2): Inicia em PRE_START com botão explícito
-    if (this.isMemorySequenceTest(q.type) && !this.isReviewMode()) {
+    // Para testes de memorização (Item 2): Inicia em PRE_START com botão explícito tanto no treino quanto na revisão
+    if (this.isMemorySequenceTest(q.type)) {
       this.memoryStage.set('PRE_START');
       this.memoryRevealed.set(false);
     } else {
       this.memoryStage.set('INPUT');
-      this.memoryRevealed.set(true);
+      this.memoryRevealed.set(false);
 
-      // Configurar Barra de Tempo imediata para testes que não são de memorização prévia
+      // Configurar Barra de Tempo imediata para testes que não são de memorização prévia (apenas fora da revisão)
       if (q.hasTimerBar && q.timeLimitSeconds && !this.isReviewMode()) {
         this.startCountdownTimer(q.timeLimitSeconds);
       }

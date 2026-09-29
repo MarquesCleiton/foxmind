@@ -91,6 +91,24 @@
             </div>
           </div>
 
+          <!-- Questão que estava sendo resolvida -->
+          <div class="timeout-question-box">
+            <span class="timeout-q-label">DESAFIO:</span>
+            <div class="timeout-q-content">
+              @if (tData.question.data?.equation) {
+                <span class="timeout-q-highlight">{{ tData.question.data.equation }} = ?</span>
+              } @else if (tData.question.data?.text) {
+                <span>{{ tData.question.data.text }}</span>
+              } @else if (tData.question.data?.sequenceText) {
+                <span class="timeout-q-highlight">{{ tData.question.data.sequenceText }}</span>
+              } @else if (tData.question.data?.wordText) {
+                <span>Cor da palavra: <strong>{{ tData.question.data.wordText }}</strong></span>
+              } @else {
+                <span>{{ tData.question.prompt }}</span>
+              }
+            </div>
+          </div>
+
           <div class="timeout-solution-box">
             <span class="solution-label">Resposta Esperada:</span>
             <strong class="solution-value">{{ tData.correctAnswerDisplay }}</strong>
