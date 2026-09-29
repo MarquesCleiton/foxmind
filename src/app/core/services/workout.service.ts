@@ -27,6 +27,12 @@ export interface SessionDiagnostics {
   overallSummary: string;
 }
 
+export interface TimeoutModalData {
+  question: ExerciseQuestion;
+  correctAnswerDisplay: string;
+  strategy?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -45,9 +51,10 @@ export class WorkoutService {
   // Feedback imediato sutil (sem interromper)
   public feedback = signal<{ isCorrect: boolean; text: string } | null>(null);
   
-  // Resumo final
+  // Resumo final e telas intermediárias
   public sessionResult = signal<DailyWorkoutSession | null>(null);
   public sessionDiagnostics = signal<SessionDiagnostics | null>(null);
+  public timeoutModalData = signal<TimeoutModalData | null>(null);
   public selectedMinutes = signal<number>(8);
   public naturalHintActive = signal<boolean>(false);
   
@@ -211,7 +218,21 @@ export class WorkoutService {
       this.currentDifficulty = Math.max(10, this.currentDifficulty - 4);
     }
 
-    // Pequeno intervalo de 350ms para absorção e próximo exercício
+    // Se foi tempo esgotado, pausa e exibe tela intermediária para evitar cliques acidentais
+    if (isTimeout) {
+      let expectedStr = String(q.expectedAnswer);
+      if (Array.isArray(q.expectedAnswer)) {
+        expectedStr = q.expectedAnswer.join(' ➔ ');
+      }
+      this.timeoutModalData.set({
+        question: q,
+        correctAnswerDisplay: expectedStr,
+        strategy: q.explanationStrategy || q.hintStrategy
+      });
+      return; // Aguarda o usuário tocar em "Continuar para o Próximo"
+    }
+
+    // Pequeno intervalo de 450ms para absorção e próximo exercício
     setTimeout(() => {
       if (this.state() === 'EXERCISING') {
         this.currentQuestionIndex.set(this.currentQuestionIndex() + 1);
@@ -409,10 +430,21 @@ export class WorkoutService {
     this.state.set('SUMMARY');
   }
 
+  public dismissTimeoutAndAdvance(): void {
+    this.timeoutModalData.set(null);
+    if (this.state() === 'EXERCISING') {
+      this.currentQuestionIndex.set(this.currentQuestionIndex() + 1);
+      this.presentNextQuestion();
+    } else if (this.state() === 'ERROR_REVIEW') {
+      this.nextErrorReview();
+    }
+  }
+
   public exitToHome(): void {
     this.state.set('IDLE');
     this.currentQuestion.set(null);
     this.sessionResult.set(null);
     this.sessionDiagnostics.set(null);
+    this.timeoutModalData.set(null);
   }
 }

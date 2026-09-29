@@ -24,6 +24,7 @@ export class ActiveExerciseComponent implements OnDestroy {
   public geniusUserSteps = signal<string[]>([]);
   public activeGeniusColor = signal<string | null>(null);
   public geniusCanInput = signal<boolean>(false);
+  public geniusReplayRemaining = signal<number>(1);
 
   // Barra de Tempo
   public hasTimer = signal<boolean>(false);
@@ -50,6 +51,7 @@ export class ActiveExerciseComponent implements OnDestroy {
     this.selectedGridCells.set([]);
     this.geniusUserSteps.set([]);
     this.geniusCanInput.set(false);
+    this.geniusReplayRemaining.set(1);
     this.activeGeniusColor.set(null);
     this.disabledOptions.set([]);
     
@@ -142,6 +144,14 @@ export class ActiveExerciseComponent implements OnDestroy {
       }, (i + 1) * speedMs + (speedMs * 0.6));
       this.timeoutIds.push(t1, t2);
     });
+  }
+
+  public replayGeniusSequence(): void {
+    if (this.geniusReplayRemaining() <= 0 || !this.geniusCanInput()) return;
+    this.geniusReplayRemaining.set(0);
+    this.geniusUserSteps.set([]);
+    const q = this.question();
+    this.runGeniusSequence(q.data?.sequence || [], q.data?.speedMs || 500);
   }
 
   public onGeniusTap(color: string): void {

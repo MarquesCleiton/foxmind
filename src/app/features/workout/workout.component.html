@@ -65,6 +65,41 @@
         </app-active-exercise>
       }
     </main>
+
+    <!-- Tela Intermediária de Tempo Esgotado (Item 1) -->
+    @if (workout.timeoutModalData(); as tData) {
+      <div class="timeout-overlay animate-fade-in">
+        <div class="timeout-card card animate-pop-in">
+          <div class="timeout-badge-row">
+            <span class="timeout-pill">⏱ Tempo Esgotado</span>
+          </div>
+
+          <div class="timeout-fox-wrap">
+            <img src="fox-mascot.png" alt="FoxMind" class="timeout-fox-img" />
+            <div class="timeout-speech">
+              <h3>Respire fundo!</h3>
+              <p>O tempo acabou nesta questão, mas a persistência é o que constrói o foco.</p>
+            </div>
+          </div>
+
+          <div class="timeout-solution-box">
+            <span class="solution-label">Resposta Esperada:</span>
+            <strong class="solution-value">{{ tData.correctAnswerDisplay }}</strong>
+          </div>
+
+          @if (tData.strategy) {
+            <div class="timeout-strategy-box">
+              <span class="strategy-label">💡 Dica Estratégica da Raposa:</span>
+              <p>{{ tData.strategy }}</p>
+            </div>
+          }
+
+          <button class="btn-primary continue-after-timeout-btn" (click)="workout.dismissTimeoutAndAdvance()">
+            Continuar para o Próximo ➔
+          </button>
+        </div>
+      </div>
+    }
   }
 
   <!-- ==================== ESTADO 4: RESUMO & RESULTADOS ==================== -->

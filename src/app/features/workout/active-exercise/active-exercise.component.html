@@ -208,6 +208,19 @@
       <p class="genius-hint">
         {{ geniusCanInput() ? 'Sua vez! Repita a sequência tocando nas cores.' : 'Aguarde a demonstração...' }}
       </p>
+
+      <!-- Opção de Rever a Sequência (Item 2 - Apenas 1x) -->
+      @if (geniusCanInput()) {
+        <div class="genius-controls">
+          @if (geniusReplayRemaining() > 0) {
+            <button class="btn-replay-genius animate-fade-in" (click)="replayGeniusSequence()">
+              <span>👁</span> Rever Sequência (1x restante)
+            </button>
+          } @else {
+            <span class="replay-exhausted-badge">✓ Replay já utilizado</span>
+          }
+        </div>
+      }
     </div>
   }
 

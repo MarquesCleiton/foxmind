@@ -457,6 +457,43 @@
   color: var(--text-muted);
 }
 
+.genius-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: -6px;
+}
+
+.btn-replay-genius {
+  background: var(--bg-surface);
+  border: 1.5px solid rgba(249, 115, 22, 0.35);
+  color: var(--fox-light);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-fast);
+}
+
+.btn-replay-genius:hover {
+  background: var(--fox-surface);
+  border-color: var(--fox-primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.replay-exhausted-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-surface-subtle);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+}
+
 /* 7. Memória Espacial (Grade) */
 .spatial-view {
   display: flex;
