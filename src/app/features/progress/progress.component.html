@@ -2,83 +2,123 @@
 
   <header class="progress-header">
     <h1 class="page-title">Seu Perfil Cognitivo</h1>
-    <p class="page-subtitle">Acompanhe sua evolução pessoal em cada uma das 6 habilidades cognitivas.</p>
+    <p class="page-subtitle">Acompanhe seu nível real, pontos fortes e onde focar seus próximos treinos.</p>
   </header>
 
-  <!-- Painel de Habilidades (Perfil Cognitivo) -->
-  <section class="skills-panel card">
-    <h2 class="section-title">Habilidades em Foco</h2>
-
-    <div class="skills-list">
-      <!-- Cálculo -->
-      <div class="skill-item">
-        <div class="skill-info">
-          <span class="skill-name">🔢 Cálculo Mental</span>
-          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.calculation }}</span>
+  <!-- ==================== DIAGNÓSTICO GERAL DA RAPOSA ==================== -->
+  @if (diagnosis(); as diag) {
+    <section class="diagnosis-card card animate-pop-in">
+      <div class="diagnosis-top">
+        <div class="fox-diag-avatar">
+          <img src="fox-mascot.png" alt="FoxMind" class="fox-diag-img" />
         </div>
-        <div class="meter-track">
-          <div class="meter-bar bar-calc" [style.width.%]="storage.profileSignal().cognitiveScores.calculation"></div>
-        </div>
-      </div>
-
-      <!-- Memória -->
-      <div class="skill-item">
-        <div class="skill-info">
-          <span class="skill-name">🧠 Memória de Trabalho</span>
-          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.memory }}</span>
-        </div>
-        <div class="meter-track">
-          <div class="meter-bar bar-mem" [style.width.%]="storage.profileSignal().cognitiveScores.memory"></div>
+        <div class="diagnosis-score-box">
+          <span class="diag-score-label">Índice Cognitivo Geral</span>
+          <div class="diag-score-row">
+            <span class="diag-score-num">{{ diag.overallScore }}</span>
+            <span class="diag-score-max">/ 100</span>
+            <span class="badge" [ngClass]="diag.overallTierClass">{{ diag.overallTier }}</span>
+          </div>
         </div>
       </div>
 
-      <!-- Atenção -->
-      <div class="skill-item">
-        <div class="skill-info">
-          <span class="skill-name">🎯 Atenção e Inibição</span>
-          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.attention }}</span>
+      <p class="fox-advice-text">
+        🦊 <strong>Análise da Raposa:</strong> {{ diag.foxAdvice }}
+      </p>
+
+      <!-- Grade Destaque & Oportunidade -->
+      <div class="strengths-weakness-grid">
+        <!-- Ponto Forte -->
+        <div class="focus-tile tile-strength">
+          <div class="focus-header">
+            <span class="focus-icon">🌟</span>
+            <span class="focus-title">Seu Ponto Mais Forte</span>
+          </div>
+          <div class="focus-body">
+            <div class="focus-skill-row">
+              <span class="focus-name">{{ diag.strongestSkill.icon }} {{ diag.strongestSkill.name }}</span>
+              <span class="focus-score">{{ diag.strongestSkill.score }}/100</span>
+            </div>
+            <span class="focus-tip">{{ diag.strongestSkill.description }}</span>
+          </div>
         </div>
-        <div class="meter-track">
-          <div class="meter-bar bar-att" [style.width.%]="storage.profileSignal().cognitiveScores.attention"></div>
+
+        <!-- Onde Focar -->
+        <div class="focus-tile tile-weakness">
+          <div class="focus-header">
+            <span class="focus-icon">🎯</span>
+            <span class="focus-title">Onde Focar Seus Treinos</span>
+          </div>
+          <div class="focus-body">
+            <div class="focus-skill-row">
+              <span class="focus-name">{{ diag.weakestSkill.icon }} {{ diag.weakestSkill.name }}</span>
+              <span class="focus-score">{{ diag.weakestSkill.score }}/100</span>
+            </div>
+            <span class="focus-tip">{{ diag.weakestSkill.recommendation }}</span>
+          </div>
         </div>
       </div>
+    </section>
+  }
 
-      <!-- Velocidade -->
-      <div class="skill-item">
-        <div class="skill-info">
-          <span class="skill-name">⚡ Velocidade de Processamento</span>
-          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.speed }}</span>
-        </div>
-        <div class="meter-track">
-          <div class="meter-bar bar-spd" [style.width.%]="storage.profileSignal().cognitiveScores.speed"></div>
-        </div>
+  <!-- ==================== RÉGUA DE NÍVEIS COGNITIVOS ==================== -->
+  <section class="scale-legend-card card">
+    <span class="scale-title">Escala de Desempenho</span>
+    <div class="scale-tiers">
+      <div class="scale-tier">
+        <span class="tier-dot dot-practice"></span>
+        <span class="tier-name">1–49: Iniciante</span>
       </div>
-
-      <!-- Espacial -->
-      <div class="skill-item">
-        <div class="skill-info">
-          <span class="skill-name">📐 Memória Espacial</span>
-          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.spatial }}</span>
-        </div>
-        <div class="meter-track">
-          <div class="meter-bar bar-calc" [style.width.%]="storage.profileSignal().cognitiveScores.spatial"></div>
-        </div>
+      <div class="scale-tier">
+        <span class="tier-dot dot-developing"></span>
+        <span class="tier-name">50–69: Em Evolução</span>
       </div>
-
-      <!-- Flexibilidade -->
-      <div class="skill-item">
-        <div class="skill-info">
-          <span class="skill-name">🔄 Flexibilidade & Ordenação</span>
-          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.flexibility }}</span>
-        </div>
-        <div class="meter-track">
-          <div class="meter-bar bar-mem" [style.width.%]="storage.profileSignal().cognitiveScores.flexibility"></div>
-        </div>
+      <div class="scale-tier">
+        <span class="tier-dot dot-advanced"></span>
+        <span class="tier-name">70–84: Avançado</span>
+      </div>
+      <div class="scale-tier">
+        <span class="tier-dot dot-master"></span>
+        <span class="tier-name">85–100: Mestre</span>
       </div>
     </div>
   </section>
 
-  <!-- Histórico das Últimas Sessões -->
+  <!-- ==================== DETALHAMENTO DAS 6 HABILIDADES ==================== -->
+  <section class="skills-panel card">
+    <h2 class="section-title">Avaliação por Habilidade</h2>
+
+    <div class="skills-list">
+      @for (skill of evaluatedSkills(); track skill.key) {
+        <div class="skill-card-detailed">
+          <div class="skill-header-row">
+            <div class="skill-title-wrap">
+              <span class="skill-icon-emoji">{{ skill.icon }}</span>
+              <div class="skill-titles">
+                <span class="skill-title-name">{{ skill.name }}</span>
+                <span class="skill-title-desc">{{ skill.description }}</span>
+              </div>
+            </div>
+            <div class="skill-score-wrap">
+              <span class="badge" [ngClass]="skill.tierClass">{{ skill.tier }}</span>
+              <span class="skill-num-score">{{ skill.score }} <small>/ 100</small></span>
+            </div>
+          </div>
+
+          <div class="meter-track">
+            <div class="meter-bar" [ngClass]="skill.barClass" [style.width.%]="skill.score"></div>
+          </div>
+
+          <div class="skill-tip-box">
+            <span class="tip-label">💡 Para evoluir:</span>
+            <span class="tip-text">{{ skill.recommendation }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ==================== HISTÓRICO DE TREINOS ==================== -->
   <section class="sessions-history card">
     <h2 class="section-title">Últimos Treinos Concluídos</h2>
 
@@ -92,7 +132,7 @@
           <div class="history-item">
             <div class="history-left">
               <span class="history-date">{{ s.date }}</span>
-              <span class="history-meta">{{ s.totalDurationSeconds }}s • {{ s.totalQuestions }} questões</span>
+              <span class="history-meta">⏱ {{ formatDuration(s.totalDurationSeconds) }} • {{ s.totalQuestions }} questões</span>
             </div>
             <div class="history-right">
               <span class="history-accuracy badge badge-att">{{ s.accuracyPercentage }}% acerto</span>
@@ -104,28 +144,30 @@
     }
   </section>
 
-  <!-- Recordes Pessoais -->
-  @if (personalRecords().length > 0) {
-    <section class="records-panel card">
-      <h2 class="section-title">Recordes Pessoais</h2>
+  <!-- ==================== RECORDES PESSOAIS ==================== -->
+  <section class="personal-records card">
+    <h2 class="section-title">Recordes Pessoais</h2>
+
+    @if (personalRecords().length === 0) {
+      <div class="empty-state">
+        <p>Complete seu primeiro treino para registrar recordes pessoais em velocidade e precisão!</p>
+      </div>
+    } @else {
       <div class="records-grid">
-        @for (rec of personalRecords(); track rec.category) {
+        @for (r of personalRecords(); track r.category) {
           <div class="record-card">
-            <span class="record-cat">{{ getCategoryLabel(rec.category) }}</span>
+            <span class="record-cat">{{ getCategoryLabel(r.category) }}</span>
             <div class="record-stats">
-              <div class="rec-stat">
-                <span class="rec-label">Melhor Precisão</span>
-                <span class="rec-val">{{ rec.bestAccuracy }}%</span>
-              </div>
-              <div class="rec-stat">
-                <span class="rec-label">Dificuldade Máx.</span>
-                <span class="rec-val">{{ rec.maxDifficulty }}</span>
-              </div>
+              <span class="record-stat">Melhor Precisão: <strong>{{ r.bestAccuracy }}%</strong></span>
+              @if (r.bestTimeMs > 0) {
+                <span class="record-stat">Melhor Tempo: <strong>{{ (r.bestTimeMs / 1000).toFixed(1) }}s</strong></span>
+              }
+              <span class="record-stat">Maior Nível: <strong>Lvl {{ r.maxDifficulty }}</strong></span>
             </div>
           </div>
         }
       </div>
-    </section>
-  }
+    }
+  </section>
 
 </div>

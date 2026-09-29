@@ -94,9 +94,54 @@
         </div>
         <div class="metric-card">
           <span class="metric-label">Duração</span>
-          <span class="metric-value">{{ workout.sessionResult()?.totalDurationSeconds }}s</span>
+          <span class="metric-value font-compact">
+            {{ workout.sessionDiagnostics()?.formattedDuration || (workout.sessionResult()?.totalDurationSeconds + 's') }}
+          </span>
         </div>
       </div>
+
+      <!-- Diagnóstico da Raposa: O que foi bem & Onde focar para melhorar (Item 2) -->
+      @if (workout.sessionDiagnostics(); as diag) {
+        <section class="diagnostic-section">
+          <!-- Onde se destacou -->
+          <div class="diagnostic-card card card-strengths">
+            <div class="diag-header">
+              <span class="diag-icon">🌟</span>
+              <h3>Onde você se destacou</h3>
+            </div>
+            <ul class="diag-list">
+              @for (item of diag.strengths; track item.title) {
+                <li class="diag-item">
+                  <span class="diag-bullet">{{ item.icon }}</span>
+                  <div class="diag-content">
+                    <strong>{{ item.title }}</strong>
+                    <p>{{ item.detail }}</p>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+
+          <!-- Onde melhorar -->
+          <div class="diagnostic-card card card-improvements">
+            <div class="diag-header">
+              <span class="diag-icon">🎯</span>
+              <h3>Onde focar para evoluir</h3>
+            </div>
+            <ul class="diag-list">
+              @for (item of diag.improvements; track item.title) {
+                <li class="diag-item">
+                  <span class="diag-bullet">{{ item.icon }}</span>
+                  <div class="diag-content">
+                    <strong>{{ item.title }}</strong>
+                    <p>{{ item.detail }}</p>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+        </section>
+      }
 
       <!-- Ações Finais -->
       <div class="summary-actions">

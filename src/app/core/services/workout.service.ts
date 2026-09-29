@@ -13,6 +13,20 @@ import {
 
 export type WorkoutState = 'IDLE' | 'WARMUP' | 'EXERCISING' | 'ERROR_REVIEW' | 'SUMMARY';
 
+export interface SessionDiagnosticItem {
+  category: string;
+  icon: string;
+  title: string;
+  detail: string;
+}
+
+export interface SessionDiagnostics {
+  formattedDuration: string;
+  strengths: SessionDiagnosticItem[];
+  improvements: SessionDiagnosticItem[];
+  overallSummary: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -33,6 +47,7 @@ export class WorkoutService {
   
   // Resumo final
   public sessionResult = signal<DailyWorkoutSession | null>(null);
+  public sessionDiagnostics = signal<SessionDiagnostics | null>(null);
   public selectedMinutes = signal<number>(8);
   public naturalHintActive = signal<boolean>(false);
   
@@ -291,6 +306,104 @@ export class WorkoutService {
       });
     }
 
+    // Diagnósticos da Sessão (O que foi bem & Onde focar para melhorar)
+    const categoryNames: Record<CognitiveCategory, { name: string; icon: string }> = {
+      CALCULATION: { name: 'Cálculo Mental', icon: '🔢' },
+      MEMORY: { name: 'Memória de Trabalho', icon: '🧠' },
+      ATTENTION: { name: 'Atenção & Foco', icon: '🎯' },
+      SPEED: { name: 'Velocidade de Reação', icon: '⚡' },
+      SPATIAL: { name: 'Memória Espacial', icon: '📐' },
+      ORDERING: { name: 'Flexibilidade & Ordenação', icon: '🔄' },
+      LOGIC: { name: 'Raciocínio Lógico', icon: '💡' }
+    };
+
+    const strengths: SessionDiagnosticItem[] = [];
+    const improvements: SessionDiagnosticItem[] = [];
+
+    for (const cat of categoriesTrained) {
+      const attempts = this.sessionAttempts.filter(a => a.category === cat);
+      const correct = attempts.filter(a => a.isCorrect).length;
+      const acc = Math.round((correct / attempts.length) * 100);
+      const avgMs = Math.round(attempts.reduce((sum, a) => sum + a.responseTimeMs, 0) / attempts.length);
+      const avgSec = (avgMs / 1000).toFixed(1);
+      const timeouts = attempts.filter(a => a.isTimeout).length;
+      const meta = categoryNames[cat] || { name: cat, icon: '✨' };
+
+      if (acc >= 75) {
+        let detail = `${acc}% de acerto com média de ${avgSec}s por questão.`;
+        if (acc === 100) {
+          detail = `Precisão impecável (100% de acerto)! Respostas ágeis em ${avgSec}s.`;
+        }
+        strengths.push({
+          category: cat,
+          icon: meta.icon,
+          title: meta.name,
+          detail
+        });
+      } else {
+        let detail = `${acc}% de precisão. `;
+        if (timeouts > 0) {
+          detail += `Houve ${timeouts} questão(ões) com tempo esgotado; tente responder com um primeiro palpite se estiver em dúvida.`;
+        } else if (cat === 'CALCULATION') {
+          detail += 'Pratique decompor números em dezenas inteiras para acelerar o raciocínio.';
+        } else if (cat === 'MEMORY' || cat === 'SPATIAL') {
+          detail += 'Tente criar padrões visuais ou agrupar os dígitos em blocos na mente.';
+        } else if (cat === 'ATTENTION' || cat === 'SPEED') {
+          detail += 'Nos testes de conflito (Stroop/Cores), faça uma pausa de 1 segundo antes de tocar.';
+        } else {
+          detail += 'Pratique para ganhar fluência na inversão e dedução de sequências lógicas.';
+        }
+
+        improvements.push({
+          category: cat,
+          icon: meta.icon,
+          title: meta.name,
+          detail
+        });
+      }
+    }
+
+    // Se o usuário gabaritou tudo (100%)
+    if (improvements.length === 0) {
+      improvements.push({
+        category: 'ALL',
+        icon: '🚀',
+        title: 'Próximo Desafio',
+        detail: 'Sua precisão foi máxima! No próximo treino, experimente aumentar o tempo para 15 minutos para exercitar a resistência sob maior volume.'
+      });
+    }
+
+    // Se não houve nenhuma com 75%+
+    if (strengths.length === 0 && totalQuestions > 0) {
+      const best = [...categoriesTrained].sort((a, b) => {
+        const accA = (this.sessionAttempts.filter(x => x.category === a && x.isCorrect).length / this.sessionAttempts.filter(x => x.category === a).length);
+        const accB = (this.sessionAttempts.filter(x => x.category === b && x.isCorrect).length / this.sessionAttempts.filter(x => x.category === b).length);
+        return accB - accA;
+      })[0];
+      const meta = categoryNames[best] || { name: best, icon: '✨' };
+      strengths.push({
+        category: best,
+        icon: meta.icon,
+        title: meta.name,
+        detail: 'Habilidade onde você demonstrou maior persistência e empenho na sessão.'
+      });
+    }
+
+    const mins = Math.floor(totalDurationSeconds / 60);
+    const secs = totalDurationSeconds % 60;
+    const formattedDuration = mins > 0 
+      ? (secs > 0 ? `${mins} min ${secs < 10 ? '0' : ''}${secs}s` : `${mins} min`)
+      : `${secs}s`;
+
+    this.sessionDiagnostics.set({
+      formattedDuration,
+      strengths,
+      improvements,
+      overallSummary: accuracyPercentage >= 80 
+        ? 'Excelente sessão! Seus circuitos neurais trabalharam em alta sintonia.'
+        : 'Bom treino! O motor adaptativo recalibrou os desafios para fortalecer seus pontos de hesitação.'
+    });
+
     this.audio.playCelebration();
     this.sessionResult.set(sessionData);
     this.state.set('SUMMARY');
@@ -300,5 +413,6 @@ export class WorkoutService {
     this.state.set('IDLE');
     this.currentQuestion.set(null);
     this.sessionResult.set(null);
+    this.sessionDiagnostics.set(null);
   }
 }

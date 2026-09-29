@@ -254,6 +254,90 @@
 .text-emerald { color: var(--color-att); }
 .text-amber { color: var(--fox-primary); }
 
+.font-compact {
+  font-size: 1.45rem !important;
+}
+
+/* Diagnóstico da Raposa */
+.diagnostic-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.diagnostic-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-strengths {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), var(--bg-surface));
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.card-improvements {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), var(--bg-surface));
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.diag-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.diag-icon {
+  font-size: 1.3rem;
+}
+
+.card-strengths .diag-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-att);
+}
+
+.card-improvements .diag-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--fox-primary);
+}
+
+.diag-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.diag-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.diag-bullet {
+  font-size: 1.15rem;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.diag-content strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.diag-content p {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
 .summary-actions {
   display: flex;
   flex-direction: column;
