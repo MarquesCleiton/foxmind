@@ -355,3 +355,167 @@
 .text-amber {
   color: var(--fox-primary);
 }
+
+/* Card de Instalação PWA */
+.install-pwa-card {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(20, 28, 46, 0.95));
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 4px 18px rgba(249, 115, 22, 0.15);
+  border-radius: var(--radius-md);
+}
+
+.install-pwa-body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.install-pwa-badge {
+  background: var(--fox-primary);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.install-pwa-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.install-pwa-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.install-pwa-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.install-pwa-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-install-action {
+  background: var(--fox-primary);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.btn-install-action:hover {
+  background: var(--fox-hover);
+}
+
+.btn-install-dismiss {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 4px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.btn-install-dismiss:hover {
+  color: var(--text-primary);
+}
+
+/* Modal iOS Guide */
+.ios-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ios-modal {
+  max-width: 400px;
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-focus);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  border-radius: var(--radius-lg);
+}
+
+.ios-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ios-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ios-icon {
+  font-size: 1.3rem;
+}
+
+.ios-modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.btn-close-modal {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.ios-modal-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.ios-steps-list {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.86rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.ios-steps-list strong {
+  color: var(--fox-light);
+}
+
+.ios-confirm-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 4px;
+}

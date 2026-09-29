@@ -19,6 +19,27 @@
     </div>
   </header>
 
+  <!-- Banner de Instalação PWA (Discreto e Elegante) -->
+  @if (pwa.showInstallBanner()) {
+    <div class="install-pwa-card card animate-pop-in">
+      <div class="install-pwa-body">
+        <span class="install-pwa-badge">APP</span>
+        <div class="install-pwa-info">
+          <p class="install-pwa-title">Instalar FoxMind</p>
+          <p class="install-pwa-subtitle">Adicione à tela inicial para treinar offline e em tela cheia.</p>
+        </div>
+      </div>
+      <div class="install-pwa-actions">
+        <button class="btn-install-action" (click)="pwa.installApp()">
+          Instalar
+        </button>
+        <button class="btn-install-dismiss" (click)="pwa.dismissBanner()" title="Fechar">
+          ✕
+        </button>
+      </div>
+    </div>
+  }
+
   <!-- Saudação da Raposa Mentor -->
   <section class="fox-greeting-card card animate-pop-in">
     <div class="greeting-content">
@@ -134,5 +155,37 @@
       <span class="stat-mini-val">{{ storage.profileSignal().totalSessionsCompleted }}</span>
     </div>
   </section>
+
+  <!-- Modal com Guia de Instalação para iPhone / iOS Safari -->
+  @if (pwa.showIosGuideModal()) {
+    <div class="ios-modal-backdrop" (click)="pwa.closeIosGuide()">
+      <div class="ios-modal card animate-pop-in" (click)="$event.stopPropagation()">
+        <div class="ios-modal-header">
+          <div class="ios-title-wrap">
+            <span class="ios-icon">📲</span>
+            <h3>Instalar no iPhone / iPad</h3>
+          </div>
+          <button class="btn-close-modal" (click)="pwa.closeIosGuide()">✕</button>
+        </div>
+        <p class="ios-modal-desc">
+          O Safari permite instalar o FoxMind diretamente na tela de início sem precisar da App Store:
+        </p>
+        <ol class="ios-steps-list">
+          <li>
+            Toque no botão de <strong>Compartilhar</strong> (ícone com quadrado e seta para cima) na barra inferior do Safari.
+          </li>
+          <li>
+            Role para baixo e selecione <strong>"Adicionar à Tela de Início"</strong>.
+          </li>
+          <li>
+            Toque em <strong>Adicionar</strong> no canto superior direito.
+          </li>
+        </ol>
+        <button class="btn-primary ios-confirm-btn" (click)="pwa.closeIosGuide()">
+          Entendi
+        </button>
+      </div>
+    </div>
+  }
 
 </div>
