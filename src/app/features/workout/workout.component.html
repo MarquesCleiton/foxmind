@@ -19,9 +19,14 @@
         <span class="badge badge-att">⚡ Dificuldade Adaptativa</span>
       </div>
 
-      <button class="btn-primary start-now-btn" (click)="onWarmupComplete()">
-        Estou Pronto
-      </button>
+      <div class="warmup-actions">
+        <button class="btn-primary start-now-btn" (click)="onWarmupComplete()">
+          ▶ Estou Pronto, Vamos lá!
+        </button>
+        <button class="btn-secondary warmup-later-btn" (click)="cancelWarmupAndReturn()">
+          🦊 Ainda não, treinar mais tarde
+        </button>
+      </div>
     </div>
   }
 
@@ -29,7 +34,7 @@
   @if (workout.state() === 'EXERCISING' || workout.state() === 'ERROR_REVIEW') {
     <!-- Barra Superior de Controle Zen -->
     <header class="workout-header">
-      <button class="exit-btn" (click)="exitWorkout()" title="Pausar / Sair">✕</button>
+      <button class="exit-btn" (click)="onExitClicked()" title="Pausar / Sair">✕</button>
 
       <div class="progress-bar-container">
         <div 
@@ -101,6 +106,29 @@
           <button class="btn-primary continue-after-timeout-btn" (click)="workout.dismissTimeoutAndAdvance()">
             Continuar para o Próximo ➔
           </button>
+        </div>
+      </div>
+    }
+
+    <!-- Modal de Confirmação de Saída ao Clicar no X (Item 4) -->
+    @if (showExitConfirm()) {
+      <div class="confirm-exit-overlay animate-fade-in" (click)="dismissExitConfirm()">
+        <div class="confirm-exit-card card animate-pop-in" (click)="$event.stopPropagation()">
+          <div class="confirm-fox-badge">🦊</div>
+          <h3 class="confirm-exit-title">Deseja pausar o treino?</h3>
+          <p class="confirm-exit-desc">
+            Você está na questão <strong>{{ workout.currentQuestionIndex() + 1 }} de {{ workout.totalQuestionsCount() }}</strong>.
+            Se sair agora, esta sessão não será contabilizada no seu histórico de hoje.
+          </p>
+
+          <div class="confirm-exit-actions">
+            <button class="btn-primary resume-training-btn" (click)="dismissExitConfirm()">
+              ▶ Continuar Treino
+            </button>
+            <button class="btn-secondary quit-training-btn" (click)="confirmExit()">
+              Sair do Treino
+            </button>
+          </div>
         </div>
       </div>
     }

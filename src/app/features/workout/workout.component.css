@@ -58,11 +58,43 @@
   margin: 12px 0 24px;
 }
 
-.start-now-btn {
+.warmup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   width: 100%;
   max-width: 320px;
+}
+
+.start-now-btn {
+  width: 100%;
   padding: 16px 28px;
   font-size: 1.1rem;
+  font-weight: 800;
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
+}
+
+.warmup-later-btn {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.warmup-later-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--fox-light);
+  border-color: rgba(249, 115, 22, 0.35);
+}
+
+.warmup-later-btn:active {
+  transform: translateY(1px);
 }
 
 /* ==================== BARRA SUPERIOR ZEN ==================== */
@@ -473,4 +505,101 @@
   padding: 16px;
   font-size: 1.05rem;
   margin-top: 6px;
+}
+
+/* ==================== MODAL DE CONFIRMAÇÃO DE SAÍDA (Item 4) ==================== */
+.confirm-exit-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.confirm-exit-card {
+  background: var(--bg-surface-elevated);
+  border: 1.5px solid rgba(249, 115, 22, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 26px 20px;
+  max-width: 360px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.confirm-fox-badge {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.confirm-exit-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.confirm-exit-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.confirm-exit-desc strong {
+  color: #ffffff;
+}
+
+.confirm-exit-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.resume-training-btn {
+  width: 100%;
+  padding: 13px;
+  font-weight: 800;
+  font-size: 1.02rem;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.35);
+  transition: all 0.15s ease;
+}
+
+.resume-training-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.45);
+}
+
+.quit-training-btn {
+  width: 100%;
+  padding: 11px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quit-training-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.5);
 }

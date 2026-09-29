@@ -28,10 +28,12 @@ export class ActiveExerciseComponent implements OnDestroy {
   public geniusCanInput = signal<boolean>(false);
   public geniusReplayRemaining = signal<number>(1);
 
-  // Barra de Tempo
+  // Barra de Tempo Geral e de Memorização (Item 1)
   public hasTimer = signal<boolean>(false);
   public timeRemaining = signal<number>(15);
   public timePercent = signal<number>(100);
+  public memorizeTimePercent = signal<number>(100);
+  public memorizeSecondsRemaining = signal<number>(3);
 
   // Ajuda Natural da Raposa
   public hintVisible = signal<boolean>(false);
@@ -40,6 +42,7 @@ export class ActiveExerciseComponent implements OnDestroy {
   private timeoutIds: any[] = [];
   private timerInterval: any = null;
   private countdownTimer: any = null;
+  private memorizeTimerInterval: any = null;
 
   constructor() {
     effect(() => {
@@ -121,17 +124,49 @@ export class ActiveExerciseComponent implements OnDestroy {
     }, 1000);
   }
 
+  private startMemorizeTimer(displayTimeMs: number): void {
+    if (this.memorizeTimerInterval) {
+      clearInterval(this.memorizeTimerInterval);
+      this.memorizeTimerInterval = null;
+    }
+    this.memorizeTimePercent.set(100);
+    this.memorizeSecondsRemaining.set(Math.max(1, Math.ceil(displayTimeMs / 1000)));
+    const startTime = Date.now();
+
+    this.memorizeTimerInterval = setInterval(() => {
+      const elapsedMs = Date.now() - startTime;
+      const remainingMs = Math.max(0, displayTimeMs - elapsedMs);
+      const percent = (remainingMs / displayTimeMs) * 100;
+      const secs = Math.max(1, Math.ceil(remainingMs / 1000));
+
+      this.memorizeTimePercent.set(percent);
+      this.memorizeSecondsRemaining.set(secs);
+
+      if (remainingMs <= 0) {
+        clearInterval(this.memorizeTimerInterval);
+        this.memorizeTimerInterval = null;
+      }
+    }, 40);
+  }
+
   private launchMemoryDisplay(q: ExerciseQuestion): void {
     if (q.type === 'NUMBER_SEQUENCE') {
       this.memoryStage.set('MEMORIZE');
       this.memoryRevealed.set(true);
       const displayTime = q.data?.displayTimeMs || 3000;
+      this.startMemorizeTimer(displayTime);
+
       const t = setTimeout(() => {
+        if (this.memorizeTimerInterval) {
+          clearInterval(this.memorizeTimerInterval);
+          this.memorizeTimerInterval = null;
+        }
         this.memoryRevealed.set(false);
         this.memoryStage.set('INPUT');
-        // Agora inicia a contagem do tempo limite para responder
-        if (q.hasTimerBar && q.timeLimitSeconds && !this.isReviewMode()) {
-          this.startCountdownTimer(q.timeLimitSeconds);
+        // Agora inicia a contagem do tempo limite para responder (Item 1)
+        const limitSecs = q.timeLimitSeconds || 16;
+        if (!this.isReviewMode()) {
+          this.startCountdownTimer(limitSecs);
         }
       }, displayTime);
       this.timeoutIds.push(t);
@@ -139,11 +174,18 @@ export class ActiveExerciseComponent implements OnDestroy {
       this.memoryStage.set('MEMORIZE');
       this.memoryRevealed.set(true);
       const flashTime = q.data?.flashTimeMs || 2500;
+      this.startMemorizeTimer(flashTime);
+
       const t = setTimeout(() => {
+        if (this.memorizeTimerInterval) {
+          clearInterval(this.memorizeTimerInterval);
+          this.memorizeTimerInterval = null;
+        }
         this.memoryRevealed.set(false);
         this.memoryStage.set('INPUT');
-        if (q.hasTimerBar && q.timeLimitSeconds && !this.isReviewMode()) {
-          this.startCountdownTimer(q.timeLimitSeconds);
+        const limitSecs = q.timeLimitSeconds || 16;
+        if (!this.isReviewMode()) {
+          this.startCountdownTimer(limitSecs);
         }
       }, flashTime);
       this.timeoutIds.push(t);
@@ -206,6 +248,10 @@ export class ActiveExerciseComponent implements OnDestroy {
         this.activeGeniusColor.set(null);
         if (i === seq.length - 1) {
           this.geniusCanInput.set(true);
+          const limitSecs = this.question()?.timeLimitSeconds || 16;
+          if (!this.isReviewMode()) {
+            this.startCountdownTimer(limitSecs);
+          }
         }
       }, (i + 1) * speedMs + (speedMs * 0.6));
       this.timeoutIds.push(t1, t2);
@@ -330,6 +376,10 @@ export class ActiveExerciseComponent implements OnDestroy {
     if (this.countdownTimer) {
       clearInterval(this.countdownTimer);
       this.countdownTimer = null;
+    }
+    if (this.memorizeTimerInterval) {
+      clearInterval(this.memorizeTimerInterval);
+      this.memorizeTimerInterval = null;
     }
     this.timeoutIds.forEach(t => clearTimeout(t));
     this.timeoutIds = [];

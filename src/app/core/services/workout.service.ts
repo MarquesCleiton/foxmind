@@ -35,6 +35,23 @@ export interface TimeoutModalData {
   strategy?: string;
 }
 
+const ACTIVE_SESSION_STORAGE_KEY = 'foxmind_active_workout_session';
+
+export interface PersistedWorkoutSession {
+  sessionId: string;
+  selectedMinutes: number;
+  activeMathDomain: MathDomain | 'MIXED' | null;
+  currentQuestionIndex: number;
+  totalQuestionsCount: number;
+  currentDifficulty: number;
+  sessionStartTime: number;
+  consecutiveErrors: number;
+  sessionAttempts: ExerciseAttempt[];
+  pendingErrors: PendingReviewError[];
+  state: WorkoutState;
+  exerciseTypes: ExerciseType[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -65,6 +82,7 @@ export class WorkoutService {
   // Sessão em andamento
   private sessionId = '';
   private questionsQueue: ExerciseQuestion[] = [];
+  private sessionExerciseTypes: ExerciseType[] = [];
   private sessionAttempts: ExerciseAttempt[] = [];
   private currentDifficulty = 40;
   private sessionStartTime = 0;
@@ -99,6 +117,7 @@ export class WorkoutService {
 
     // Iniciar aquecimento sutil de 3 segundos
     this.state.set('WARMUP');
+    this.saveActiveSessionToStorage();
   }
 
   // Inicia Treino Focado em um Módulo de Matemática Mental (Sec. 2)
@@ -117,7 +136,9 @@ export class WorkoutService {
 
     const count = targetMinutes <= 3 ? 6 : (targetMinutes <= 8 ? 12 : 20);
     const queue: ExerciseQuestion[] = [];
+    this.sessionExerciseTypes = [];
     for (let i = 0; i < count; i++) {
+      this.sessionExerciseTypes.push('MENTAL_MATH');
       queue.push(this.engine.generateMathDomainQuestion(domain, this.currentDifficulty));
     }
 
@@ -127,12 +148,14 @@ export class WorkoutService {
     this.sessionProgressPercent.set(0);
 
     this.state.set('WARMUP');
+    this.saveActiveSessionToStorage();
   }
 
   // Transição do Aquecimento para o primeiro Exercício
   public endWarmup(): void {
     this.state.set('EXERCISING');
     this.presentNextQuestion();
+    this.saveActiveSessionToStorage();
   }
 
   private buildSessionQueue(targetMinutes: number): ExerciseQuestion[] {
@@ -153,8 +176,10 @@ export class WorkoutService {
       'GENIUS_COLORS'
     ];
 
+    this.sessionExerciseTypes = [];
     for (let i = 0; i < count; i++) {
       const type = exerciseDistribution[i % exerciseDistribution.length];
+      this.sessionExerciseTypes.push(type);
       queue.push(this.engine.generateQuestion(type, this.currentDifficulty));
     }
 
@@ -276,8 +301,10 @@ export class WorkoutService {
       if (this.state() === 'EXERCISING') {
         this.currentQuestionIndex.set(this.currentQuestionIndex() + 1);
         this.presentNextQuestion();
+        this.saveActiveSessionToStorage();
       } else if (this.state() === 'ERROR_REVIEW') {
         this.nextErrorReview();
+        this.saveActiveSessionToStorage();
       }
     }, 450);
   }
@@ -467,6 +494,7 @@ export class WorkoutService {
     this.audio.playCelebration();
     this.sessionResult.set(sessionData);
     this.state.set('SUMMARY');
+    this.clearSavedSession();
   }
 
   public dismissTimeoutAndAdvance(): void {
@@ -474,17 +502,117 @@ export class WorkoutService {
     if (this.state() === 'EXERCISING') {
       this.currentQuestionIndex.set(this.currentQuestionIndex() + 1);
       this.presentNextQuestion();
+      this.saveActiveSessionToStorage();
     } else if (this.state() === 'ERROR_REVIEW') {
       this.nextErrorReview();
+      this.saveActiveSessionToStorage();
     }
   }
 
   public exitToHome(): void {
+    this.clearSavedSession();
     this.state.set('IDLE');
     this.currentQuestion.set(null);
     this.sessionResult.set(null);
     this.sessionDiagnostics.set(null);
     this.timeoutModalData.set(null);
     this.activeMathDomain.set(null);
+  }
+
+  // ==================== PERSISTÊNCIA & RECUPERAÇÃO APÓS REFRESH (Item 3) ====================
+  public hasSavedActiveSession(): boolean {
+    try {
+      const raw = localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+      if (!raw) return false;
+      const parsed: PersistedWorkoutSession = JSON.parse(raw);
+      return !!parsed.sessionId && 
+             (Date.now() - parsed.sessionStartTime < 4 * 60 * 60 * 1000) && 
+             parsed.state !== 'SUMMARY' && 
+             parsed.state !== 'IDLE';
+    } catch {
+      return false;
+    }
+  }
+
+  public restoreSessionWithRegeneratedCurrent(): boolean {
+    try {
+      const raw = localStorage.getItem(ACTIVE_SESSION_STORAGE_KEY);
+      if (!raw) return false;
+      const saved: PersistedWorkoutSession = JSON.parse(raw);
+
+      this.sessionId = saved.sessionId;
+      this.selectedMinutes.set(saved.selectedMinutes);
+      this.activeMathDomain.set(saved.activeMathDomain);
+      this.currentDifficulty = saved.currentDifficulty || 40;
+      this.sessionStartTime = saved.sessionStartTime || Date.now();
+      this.consecutiveErrors = saved.consecutiveErrors || 0;
+      this.sessionAttempts = saved.sessionAttempts || [];
+      this.pendingErrors = saved.pendingErrors || [];
+      this.sessionExerciseTypes = saved.exerciseTypes || [];
+      this.totalQuestionsCount.set(saved.totalQuestionsCount);
+      this.currentQuestionIndex.set(saved.currentQuestionIndex);
+
+      // Reconstruir fila de questões:
+      // O teste atual (no currentQuestionIndex) e os seguintes são REFEITOS com novos valores e ordem!
+      const queue: ExerciseQuestion[] = [];
+      for (let i = 0; i < saved.totalQuestionsCount; i++) {
+        if (saved.activeMathDomain) {
+          queue.push(this.engine.generateMathDomainQuestion(saved.activeMathDomain, this.currentDifficulty));
+        } else {
+          const type = this.sessionExerciseTypes[i] || 'MENTAL_MATH';
+          queue.push(this.engine.generateQuestion(type, this.currentDifficulty));
+        }
+      }
+      this.questionsQueue = queue;
+
+      if (saved.state === 'WARMUP') {
+        this.state.set('WARMUP');
+      } else {
+        this.state.set('EXERCISING');
+        const currentQ = this.questionsQueue[this.currentQuestionIndex()];
+        this.currentQuestion.set(currentQ);
+        this.questionStartTime = Date.now();
+        this.feedback.set(null);
+        this.sessionProgressPercent.set(Math.round((this.currentQuestionIndex() / this.totalQuestionsCount()) * 100));
+        this.naturalHintActive.set(this.consecutiveErrors >= 2);
+      }
+
+      this.saveActiveSessionToStorage();
+      return true;
+    } catch (err) {
+      console.error('Erro ao restaurar sessão de treino:', err);
+      this.clearSavedSession();
+      return false;
+    }
+  }
+
+  public clearSavedSession(): void {
+    try {
+      localStorage.removeItem(ACTIVE_SESSION_STORAGE_KEY);
+    } catch {}
+  }
+
+  private saveActiveSessionToStorage(): void {
+    try {
+      if (this.state() === 'IDLE' || this.state() === 'SUMMARY') {
+        this.clearSavedSession();
+        return;
+      }
+      const data: PersistedWorkoutSession = {
+        sessionId: this.sessionId,
+        selectedMinutes: this.selectedMinutes(),
+        activeMathDomain: this.activeMathDomain(),
+        currentQuestionIndex: this.currentQuestionIndex(),
+        totalQuestionsCount: this.totalQuestionsCount(),
+        currentDifficulty: this.currentDifficulty,
+        sessionStartTime: this.sessionStartTime,
+        consecutiveErrors: this.consecutiveErrors,
+        sessionAttempts: this.sessionAttempts,
+        pendingErrors: this.pendingErrors,
+        state: this.state(),
+        exerciseTypes: this.sessionExerciseTypes
+      };
+      localStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, JSON.stringify(data));
+    } catch {}
   }
 }

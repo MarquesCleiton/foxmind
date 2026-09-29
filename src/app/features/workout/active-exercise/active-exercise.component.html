@@ -252,7 +252,22 @@
     } @else {
       @if (memoryRevealed()) {
         <div class="sequence-memorize animate-pop-in">
-          <div class="memorize-badge">Memorize agora!</div>
+          <!-- Barra de Tempo da Memorização (Item 1) -->
+          <div class="memorize-timer-bar animate-fade-in">
+            <div class="memorize-timer-header">
+              <span class="memorize-timer-badge">👁 Memorize agora!</span>
+              <span class="memorize-timer-seconds">⏱ {{ memorizeSecondsRemaining() }}s</span>
+            </div>
+            <div class="memorize-timer-track">
+              <div 
+                class="memorize-timer-fill" 
+                [style.width.%]="memorizeTimePercent()"
+                [class.timer-warning]="memorizeTimePercent() <= 40"
+                [class.timer-danger]="memorizeTimePercent() <= 20">
+              </div>
+            </div>
+          </div>
+
           <div class="digits-row">
             @for (d of question().data.sequence; track $index) {
               <div class="digit-box">{{ d }}</div>
@@ -287,6 +302,34 @@
           <p class="pre-start-rule">
             Observe as cores piscarem e repita exatamente na <strong>mesma ordem</strong>!
           </p>
+        </div>
+
+        <!-- Exemplo de Resposta (Item 2) -->
+        <div class="pre-start-example-box">
+          <div class="example-header">
+            <span class="example-label">Exemplo de Resposta:</span>
+          </div>
+          <div class="example-flow">
+            <div class="example-step">
+              <span class="step-label">Cores piscam:</span>
+              <div class="demo-color-dots">
+                <span class="dot-demo dot-cyan"></span>
+                <span class="dot-demo dot-violet"></span>
+                <span class="dot-demo dot-amber"></span>
+              </div>
+            </div>
+            <div class="example-arrow">
+              <span>➔ Na ordem</span>
+            </div>
+            <div class="example-step">
+              <span class="step-label highlight-label">Você toca:</span>
+              <div class="demo-color-dots">
+                <span class="dot-demo dot-cyan active-dot">1º</span>
+                <span class="dot-demo dot-violet active-dot">2º</span>
+                <span class="dot-demo dot-amber active-dot">3º</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="pre-start-strategy">
@@ -365,6 +408,34 @@
           </p>
         </div>
 
+        <!-- Exemplo de Resposta (Item 2) -->
+        <div class="pre-start-example-box">
+          <div class="example-header">
+            <span class="example-label">Exemplo de Resposta:</span>
+          </div>
+          <div class="example-flow">
+            <div class="example-step">
+              <span class="step-label">Você vê:</span>
+              <div class="demo-mini-grid">
+                <span class="mini-cell active-cell"></span><span class="mini-cell"></span><span class="mini-cell"></span>
+                <span class="mini-cell"></span><span class="mini-cell active-cell"></span><span class="mini-cell"></span>
+                <span class="mini-cell"></span><span class="mini-cell"></span><span class="mini-cell active-cell"></span>
+              </div>
+            </div>
+            <div class="example-arrow">
+              <span>➔ Guardar</span>
+            </div>
+            <div class="example-step">
+              <span class="step-label highlight-label">Você toca:</span>
+              <div class="demo-mini-grid">
+                <span class="mini-cell check-cell">✓</span><span class="mini-cell"></span><span class="mini-cell"></span>
+                <span class="mini-cell"></span><span class="mini-cell check-cell">✓</span><span class="mini-cell"></span>
+                <span class="mini-cell"></span><span class="mini-cell"></span><span class="mini-cell check-cell">✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="pre-start-strategy">
           <span class="strategy-fox-icon">🦊</span>
           <span><strong>Dica da Raposa:</strong> Conecte mentalmente os pontos formando desenhos ou padrões visuais.</span>
@@ -384,6 +455,24 @@
       </div>
     } @else {
       <div class="spatial-view">
+        @if (memoryRevealed()) {
+          <!-- Barra de Tempo da Memorização Espacial (Item 1) -->
+          <div class="memorize-timer-bar animate-fade-in">
+            <div class="memorize-timer-header">
+              <span class="memorize-timer-badge">📐 Memorize as posições!</span>
+              <span class="memorize-timer-seconds">⏱ {{ memorizeSecondsRemaining() }}s</span>
+            </div>
+            <div class="memorize-timer-track">
+              <div 
+                class="memorize-timer-fill" 
+                [style.width.%]="memorizeTimePercent()"
+                [class.timer-warning]="memorizeTimePercent() <= 40"
+                [class.timer-danger]="memorizeTimePercent() <= 20">
+              </div>
+            </div>
+          </div>
+        }
+
         <div 
           class="spatial-grid" 
           [style.grid-template-columns]="'repeat(' + question().data.gridSize + ', 1fr)'">
