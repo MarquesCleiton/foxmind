@@ -27,6 +27,11 @@ export interface SessionDiagnostics {
   strengths: SessionDiagnosticItem[];
   improvements: SessionDiagnosticItem[];
   overallSummary: string;
+  speechTitle: string;
+  speechMessage: string;
+  accuracyClass: 'acc-high' | 'acc-mid' | 'acc-low';
+  isImpulsive: boolean;
+  honestNotice?: string;
 }
 
 export interface TimeoutModalData {
@@ -352,8 +357,43 @@ export class WorkoutService {
       ? Math.round(this.sessionAttempts.reduce((acc, cur) => acc + cur.responseTimeMs, 0) / totalQuestions) 
       : 0;
 
-    // Cálculo do XP: Base (50) + Acertos (10 cada) + Bônus de acurácia
-    const xpEarned = Math.round(50 + (correctCount * 10) + (accuracyPercentage > 80 ? 30 : 10));
+    // Heurística Anti-Impulsividade (Thresholds mínimos para leitura e resposta cognitiva)
+    const minThresholds: Record<CognitiveCategory, number> = {
+      CALCULATION: 700,
+      MEMORY: 500,
+      ATTENTION: 350,
+      SPEED: 250,
+      SPATIAL: 500,
+      ORDERING: 600,
+      LOGIC: 800
+    };
+
+    const impulsiveCount = this.sessionAttempts.filter(a => 
+      !a.isCorrect && !a.isTimeout && a.responseTimeMs < (minThresholds[a.category] || 500)
+    ).length;
+
+    const isImpulsive = totalQuestions > 0 && (
+      (impulsiveCount / totalQuestions >= 0.4) || 
+      (accuracyPercentage === 0 && avgResponseTimeMs < 600)
+    );
+
+    // Cálculo do XP: Ético e Heurístico
+    let xpEarned = 0;
+    if (isImpulsive) {
+      xpEarned = 5; // Apenas 5 XP simbólico por sessão com cliques impulsivos / chutes cegos
+    } else {
+      const accBonus = accuracyPercentage >= 80 ? 25 : (accuracyPercentage >= 60 ? 10 : 0);
+      xpEarned = Math.round(25 + (correctCount * 10) + accBonus);
+    }
+
+    let sessionTag: 'Cirúrgico' | 'Consistente' | 'Desafio' | 'Impulsivo' = 'Consistente';
+    if (isImpulsive) {
+      sessionTag = 'Impulsivo';
+    } else if (accuracyPercentage === 100) {
+      sessionTag = 'Cirúrgico';
+    } else if (accuracyPercentage < 50) {
+      sessionTag = 'Desafio';
+    }
 
     const categoriesTrained: CognitiveCategory[] = Array.from(
       new Set(this.sessionAttempts.map(a => a.category))
@@ -371,26 +411,30 @@ export class WorkoutService {
       xpEarned,
       categoriesTrained,
       completed: true,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      isImpulsive,
+      sessionTag
     };
 
     await this.storage.recordSessionComplete(sessionData);
 
-    // Atualizar Recordes Pessoais
-    for (const cat of categoriesTrained) {
-      const catAttempts = this.sessionAttempts.filter(a => a.category === cat);
-      const catCorrect = catAttempts.filter(a => a.isCorrect);
-      const bestTime = catCorrect.length > 0 ? Math.min(...catCorrect.map(a => a.responseTimeMs)) : 0;
-      const catAccuracy = Math.round((catCorrect.length / catAttempts.length) * 100);
+    // Atualizar Recordes Pessoais (Apenas para tentativas com engajamento legítimo)
+    if (!isImpulsive) {
+      for (const cat of categoriesTrained) {
+        const catAttempts = this.sessionAttempts.filter(a => a.category === cat);
+        const catCorrect = catAttempts.filter(a => a.isCorrect);
+        const bestTime = catCorrect.length > 0 ? Math.min(...catCorrect.map(a => a.responseTimeMs)) : 0;
+        const catAccuracy = Math.round((catCorrect.length / catAttempts.length) * 100);
 
-      await this.storage.updatePersonalRecord({
-        category: cat,
-        bestAccuracy: catAccuracy,
-        bestTimeMs: bestTime,
-        maxDifficulty: Math.max(...catAttempts.map(a => a.difficulty)),
-        bestStreakInSession: catCorrect.length,
-        lastUpdated: Date.now()
-      });
+        await this.storage.updatePersonalRecord({
+          category: cat,
+          bestAccuracy: catAccuracy,
+          bestTimeMs: bestTime,
+          maxDifficulty: Math.max(...catAttempts.map(a => a.difficulty)),
+          bestStreakInSession: catCorrect.length,
+          lastUpdated: Date.now()
+        });
+      }
     }
 
     // Diagnósticos da Sessão (O que foi bem & Onde focar para melhorar)
@@ -416,7 +460,8 @@ export class WorkoutService {
       const timeouts = attempts.filter(a => a.isTimeout).length;
       const meta = categoryNames[cat] || { name: cat, icon: '✨' };
 
-      if (acc >= 75) {
+      // Apenas é destaque se acurácia for realmente representativa (>= 70%)
+      if (acc >= 70) {
         let detail = `${acc}% de acerto com média de ${avgSec}s por questão.`;
         if (acc === 100) {
           detail = `Precisão impecável (100% de acerto)! Respostas ágeis em ${avgSec}s.`;
@@ -428,7 +473,7 @@ export class WorkoutService {
           detail
         });
       } else {
-        let detail = `${acc}% de precisão. `;
+        let detail = `${acc}% de precisão (${avgSec}s médios). `;
         if (timeouts > 0) {
           detail += `Houve ${timeouts} questão(ões) com tempo esgotado; tente responder com um primeiro palpite se estiver em dúvida.`;
         } else if (cat === 'CALCULATION') {
@@ -460,21 +505,37 @@ export class WorkoutService {
       });
     }
 
-    // Se não houve nenhuma com 75%+
-    if (strengths.length === 0 && totalQuestions > 0) {
-      const best = [...categoriesTrained].sort((a, b) => {
-        const accA = (this.sessionAttempts.filter(x => x.category === a && x.isCorrect).length / this.sessionAttempts.filter(x => x.category === a).length);
-        const accB = (this.sessionAttempts.filter(x => x.category === b && x.isCorrect).length / this.sessionAttempts.filter(x => x.category === b).length);
-        return accB - accA;
-      })[0];
-      const meta = categoryNames[best] || { name: best, icon: '✨' };
-      strengths.push({
-        category: best,
-        icon: meta.icon,
-        title: meta.name,
-        detail: 'Habilidade onde você demonstrou maior persistência e empenho na sessão.'
-      });
+    // Aviso honesto se não houve destaques legítimos
+    let honestNotice: string | undefined;
+    if (strengths.length === 0) {
+      honestNotice = isImpulsive
+        ? 'Nenhum destaque registrado. O ritmo apressado causou erros consecutivos. Pratique responder com mais calma na próxima sessão para assimilar as estratégias.'
+        : 'Nenhum destaque registrado nesta rodada. O nível dos exercícios estava elevado; foque nas oportunidades abaixo para evoluir.';
     }
+
+    // Mensagem da Raposa Contextual
+    let speechTitle = 'Treino Concluído!';
+    let speechMessage = 'Você completou sua meta diária com consistência. Pode descansar por hoje.';
+
+    if (isImpulsive) {
+      speechTitle = 'Ritmo Muito Acelerado!';
+      speechMessage = 'Você respondeu em ritmo impulsivo sem tempo hábil para processamento reflexivo. Respire fundo e foque na precisão antes da velocidade.';
+    } else if (accuracyPercentage === 100) {
+      speechTitle = 'Precisão Cirúrgica!';
+      speechMessage = 'Você gabaritou todos os desafios! Seus circuitos neurais trabalharam em sincronia impecável.';
+    } else if (accuracyPercentage >= 80) {
+      speechTitle = 'Excelente Treino!';
+      speechMessage = 'Ótimo aproveitamento e controle cognitivo. Seu cérebro foi desafiado no ponto certo.';
+    } else if (accuracyPercentage >= 50) {
+      speechTitle = 'Treino Concluído!';
+      speechMessage = 'Bom esforço e persistência. Continue praticando para lapidar sua velocidade e precisão.';
+    } else {
+      speechTitle = 'Desafio Elevado!';
+      speechMessage = 'Sessão exigente! O motor adaptativo identificou áreas de hesitação para reforçarmos nos próximos treinos.';
+    }
+
+    const accuracyClass: 'acc-high' | 'acc-mid' | 'acc-low' = 
+      accuracyPercentage >= 80 ? 'acc-high' : (accuracyPercentage >= 50 ? 'acc-mid' : 'acc-low');
 
     const mins = Math.floor(totalDurationSeconds / 60);
     const secs = totalDurationSeconds % 60;
@@ -488,10 +549,17 @@ export class WorkoutService {
       improvements,
       overallSummary: accuracyPercentage >= 80 
         ? 'Excelente sessão! Seus circuitos neurais trabalharam em alta sintonia.'
-        : 'Bom treino! O motor adaptativo recalibrou os desafios para fortalecer seus pontos de hesitação.'
+        : 'Sessão concluída. As respostas foram analisadas para calibrar seus próximos treinos.',
+      speechTitle,
+      speechMessage,
+      accuracyClass,
+      isImpulsive,
+      honestNotice
     });
 
-    this.audio.playCelebration();
+    if (accuracyPercentage >= 50 && !isImpulsive) {
+      this.audio.playCelebration();
+    }
     this.sessionResult.set(sessionData);
     this.state.set('SUMMARY');
     this.clearSavedSession();

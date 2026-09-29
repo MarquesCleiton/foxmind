@@ -2,10 +2,10 @@
 
   <header class="progress-header">
     <h1 class="page-title">Seu Perfil Cognitivo</h1>
-    <p class="page-subtitle">Acompanhe seu nível real, pontos fortes e onde focar seus próximos treinos.</p>
+    <p class="page-subtitle">Diagnóstico executivo de performance neural, calibração e evolução.</p>
   </header>
 
-  <!-- ==================== DIAGNÓSTICO GERAL DA RAPOSA ==================== -->
+  <!-- ==================== 1. DIAGNÓSTICO EXECUTIVO DA RAPOSA ==================== -->
   @if (diagnosis(); as diag) {
     <section class="diagnosis-card card animate-pop-in">
       <div class="diagnosis-top">
@@ -19,134 +19,165 @@
             <span class="diag-score-max">/ 100</span>
             <span class="badge" [ngClass]="diag.overallTierClass">{{ diag.overallTier }}</span>
           </div>
+
+          <!-- Status de Calibração & Momentum -->
+          <div class="diag-sub-status">
+            @if (diag.calibrationStatus === 'CALIBRATING') {
+              <div class="calibration-badge-wrap">
+                <span class="badge-calib-text">🟡 Perfil em Calibração ({{ diag.calibrationCount }}/{{ diag.calibrationTarget }} treinos)</span>
+                <div class="calib-mini-track">
+                  <div class="calib-mini-bar" [style.width.%]="(diag.calibrationCount / diag.calibrationTarget) * 100"></div>
+                </div>
+              </div>
+            } @else {
+              <span class="badge-consolidated">🟢 Perfil Consolidado ({{ storage.profileSignal().totalSessionsCompleted }} treinos avaliados)</span>
+            }
+            <span class="momentum-pill">{{ diag.momentumText }}</span>
+          </div>
         </div>
       </div>
 
+      <!-- Análise Estratégica da Raposa -->
       <p class="fox-advice-text">
         🦊 <strong>Análise da Raposa:</strong> {{ diag.foxAdvice }}
       </p>
 
-      <!-- Grade Destaque & Oportunidade -->
-      <div class="strengths-weakness-grid">
-        <!-- Ponto Forte -->
-        <div class="focus-tile tile-strength">
-          <div class="focus-header">
-            <span class="focus-icon">🌟</span>
-            <span class="focus-title">Seu Ponto Mais Forte</span>
+      <!-- Painel Cirúrgico de Foco Imediato -->
+      <div class="executive-focus-grid">
+        <!-- Gargalo Atual -->
+        <div class="exec-tile tile-bottleneck">
+          <div class="exec-tile-header">
+            <span class="exec-icon">🎯</span>
+            <span class="exec-label">Gargalo Prioritário</span>
           </div>
-          <div class="focus-body">
-            <div class="focus-skill-row">
-              <span class="focus-name">{{ diag.strongestSkill.icon }} {{ diag.strongestSkill.name }}</span>
-              <span class="focus-score">{{ diag.strongestSkill.score }}/100</span>
-            </div>
-            <span class="focus-tip">{{ diag.strongestSkill.description }}</span>
+          <div class="exec-tile-val">
+            <strong>{{ diag.weakestSkill.icon }} {{ diag.weakestSkill.name }}</strong>
+            <span class="exec-score">{{ diag.weakestSkill.score }}/100</span>
           </div>
+          <span class="exec-hint">Habilidade com maior oportunidade de avanço imediato.</span>
         </div>
 
-        <!-- Onde Focar -->
-        <div class="focus-tile tile-weakness">
-          <div class="focus-header">
-            <span class="focus-icon">🎯</span>
-            <span class="focus-title">Onde Focar Seus Treinos</span>
+        <!-- Ponto Mais Forte -->
+        <div class="exec-tile tile-strength">
+          <div class="exec-tile-header">
+            <span class="exec-icon">🌟</span>
+            <span class="exec-label">Fortaleza Consolidada</span>
           </div>
-          <div class="focus-body">
-            <div class="focus-skill-row">
-              <span class="focus-name">{{ diag.weakestSkill.icon }} {{ diag.weakestSkill.name }}</span>
-              <span class="focus-score">{{ diag.weakestSkill.score }}/100</span>
-            </div>
-            <span class="focus-tip">{{ diag.weakestSkill.recommendation }}</span>
+          <div class="exec-tile-val">
+            <strong>{{ diag.strongestSkill.icon }} {{ diag.strongestSkill.name }}</strong>
+            <span class="exec-score">{{ diag.strongestSkill.score }}/100</span>
           </div>
+          <span class="exec-hint">Base sólida de sustentação cognitiva.</span>
+        </div>
+
+        <!-- Ação Recomendada de Hoje -->
+        <div class="exec-tile tile-action">
+          <div class="exec-tile-header">
+            <span class="exec-icon">🚀</span>
+            <span class="exec-label">Plano de Ação para Hoje</span>
+          </div>
+          <p class="exec-action-text">{{ diag.dailyAction }}</p>
         </div>
       </div>
     </section>
   }
 
-  <!-- ==================== RÉGUA DE NÍVEIS COGNITIVOS ==================== -->
-  <section class="scale-legend-card card">
-    <span class="scale-title">Escala de Desempenho</span>
-    <div class="scale-tiers">
-      <div class="scale-tier">
-        <span class="tier-dot dot-practice"></span>
-        <span class="tier-name">1–49: Iniciante</span>
+  <!-- ==================== 2. MATRIZ DE EQUILÍBRIO COGNITIVO (1-GLANCE) ==================== -->
+  <section class="skills-matrix-panel card">
+    <div class="panel-header-with-badge">
+      <div>
+        <h2 class="section-title">Matriz de Equilíbrio Cognitivo</h2>
+        <p class="section-desc">Visão sintética das 6 dimensões com indicador de tendência e score normalizado.</p>
       </div>
-      <div class="scale-tier">
-        <span class="tier-dot dot-developing"></span>
-        <span class="tier-name">50–69: Em Evolução</span>
-      </div>
-      <div class="scale-tier">
-        <span class="tier-dot dot-advanced"></span>
-        <span class="tier-name">70–84: Avançado</span>
-      </div>
-      <div class="scale-tier">
-        <span class="tier-dot dot-master"></span>
-        <span class="tier-name">85–100: Mestre</span>
-      </div>
+      <span class="sub-badge">6 Dimensões</span>
     </div>
-  </section>
 
-  <!-- ==================== DETALHAMENTO DAS 6 HABILIDADES ==================== -->
-  <section class="skills-panel card">
-    <h2 class="section-title">Avaliação por Habilidade</h2>
-
-    <div class="skills-list">
+    <div class="matrix-list">
       @for (skill of evaluatedSkills(); track skill.key) {
-        <div class="skill-card-detailed">
-          <div class="skill-header-row">
-            <div class="skill-title-wrap">
-              <span class="skill-icon-emoji">{{ skill.icon }}</span>
-              <div class="skill-titles">
-                <span class="skill-title-name">{{ skill.name }}</span>
-                <span class="skill-title-desc">{{ skill.description }}</span>
+        <div class="matrix-row-card" [class.is-expanded]="expandedSkillKey() === skill.key">
+          <div class="matrix-row-main" (click)="toggleSkillExpand(skill.key)">
+            <!-- Linha 1: Nome da Habilidade e Escore -->
+            <div class="matrix-card-top">
+              <div class="matrix-skill-left">
+                <span class="skill-icon-emoji">{{ skill.icon }}</span>
+                <span class="skill-name-text">{{ skill.name }}</span>
+                @if (skill.tag === 'Gargalo') {
+                  <span class="tag-bottleneck">Gargalo</span>
+                } @else if (skill.tag === 'Forte') {
+                  <span class="tag-strength">Forte</span>
+                }
+              </div>
+
+              <div class="matrix-score-group">
+                <span class="matrix-score-num">{{ skill.score }}<small>/100</small></span>
+                @if (skill.trend === 'UP') {
+                  <span class="trend-badge trend-up">↑ +{{ skill.trendDelta }}</span>
+                } @else if (skill.trend === 'DOWN') {
+                  <span class="trend-badge trend-down">↓ {{ skill.trendDelta }}</span>
+                }
               </div>
             </div>
-            <div class="skill-score-wrap">
+
+            <!-- Linha 2: Barra de Progresso Full-Width -->
+            <div class="matrix-meter-full">
+              <div class="meter-track">
+                <div class="meter-bar" [ngClass]="skill.barClass" [style.width.%]="skill.score"></div>
+              </div>
+            </div>
+
+            <!-- Linha 3: Nível e Dica Tática -->
+            <div class="matrix-card-footer">
               <span class="badge" [ngClass]="skill.tierClass">{{ skill.tier }}</span>
-              <span class="skill-num-score">{{ skill.score }} <small>/ 100</small></span>
+              <button class="expand-tip-btn" (click)="$event.stopPropagation(); toggleSkillExpand(skill.key)">
+                {{ expandedSkillKey() === skill.key ? '✕ Fechar dica' : '💡 Estratégia' }}
+              </button>
             </div>
           </div>
 
-          <div class="meter-track">
-            <div class="meter-bar" [ngClass]="skill.barClass" [style.width.%]="skill.score"></div>
-          </div>
-
-          <div class="skill-tip-box">
-            <span class="tip-label">💡 Para evoluir:</span>
-            <span class="tip-text">{{ skill.recommendation }}</span>
-          </div>
+          <!-- Gaveta Retrátil com Estratégia Tática (Exibida sob demanda) -->
+          @if (expandedSkillKey() === skill.key) {
+            <div class="matrix-drawer animate-fade-in">
+              <p class="drawer-desc"><strong>O que mede:</strong> {{ skill.description }}</p>
+              <div class="drawer-strategy">
+                <span class="strategy-badge">💡 Estratégia de Treino</span>
+                <p>{{ skill.recommendation }}</p>
+              </div>
+            </div>
+          }
         </div>
       }
     </div>
   </section>
 
-  <!-- ==================== DOMÍNIO EM MATEMÁTICA MENTAL (NeuroSprint) ==================== -->
+  <!-- ==================== 3. DOMÍNIO EM MATEMÁTICA MENTAL (NeuroSprint) ==================== -->
   <section class="math-mastery-panel card">
     <div class="panel-header-with-badge">
-      <h2 class="section-title">Domínio em Matemática Mental</h2>
+      <div>
+        <h2 class="section-title">Domínio em Matemática Mental</h2>
+        <p class="section-desc">Automatização de fatos aritméticos essenciais e velocidade de resposta.</p>
+      </div>
       <span class="sub-badge">5 Operações</span>
     </div>
-    <p class="section-desc">Acompanhe a automatização de contas fundamentais e o tempo de resposta em cada operação.</p>
 
     <!-- Legenda de Domínio -->
     <div class="mastery-legend-pills">
       <span class="m-pill m-auto">🔵 Automatizado</span>
       <span class="m-pill m-master">🟢 Dominado</span>
       <span class="m-pill m-known">🟡 Conhecido</span>
-      <span class="m-pill m-learning">🟠 Em aprendizado</span>
+      <span class="m-pill m-learning">🟠 Em treino</span>
     </div>
 
-    <div class="math-domain-cards-list">
+    <div class="math-domain-compact-list">
       @for (dm of domainSummaries(); track dm.domain) {
-        <div class="math-domain-card">
-          <div class="domain-card-header">
-            <div class="domain-name-wrap">
-              <span class="domain-icon">{{ dm.icon }}</span>
-              <div>
-                <span class="domain-name">{{ dm.domainName }}</span>
-                <span class="domain-facts-count">{{ dm.totalFacts }} relações mapeadas</span>
-              </div>
+        <div class="math-compact-item">
+          <!-- Topo da Operação: Ícone, Nome e Métricas Rápidas -->
+          <div class="math-compact-header">
+            <div class="math-domain-title">
+              <span class="math-domain-icon">{{ dm.icon }}</span>
+              <strong class="math-domain-name">{{ dm.domainName }}</strong>
             </div>
 
-            <div class="domain-stats-pill">
+            <div class="math-metrics-right">
               @if (dm.averageTimeMs > 0) {
                 <span class="domain-avg-time">⚡ {{ (dm.averageTimeMs / 1000).toFixed(1) }}s</span>
               }
@@ -178,26 +209,37 @@
             </div>
           </div>
 
-          <!-- Rodapé com contagens detalhadas -->
+          <!-- Rodapé com contagens detalhadas e relações -->
           <div class="domain-counts-footer">
-            <span class="count-tag text-cyan">
-              <strong>{{ dm.automatedCount }}</strong> automatizados
-            </span>
-            <span class="count-tag text-emerald">
-              <strong>{{ dm.masteredCount }}</strong> dominados
-            </span>
-            <span class="count-tag text-amber">
-              <strong>{{ dm.learningCount + dm.knownCount }}</strong> em treino
-            </span>
+            <span class="math-facts-sub">{{ dm.totalFacts }} relações mapeadas</span>
+            <div class="domain-tags-group">
+              @if (dm.automatedCount > 0) {
+                <span class="count-tag text-cyan"><strong>{{ dm.automatedCount }}</strong> auto</span>
+              }
+              @if (dm.masteredCount > 0) {
+                <span class="count-tag text-emerald"><strong>{{ dm.masteredCount }}</strong> dominados</span>
+              }
+              @if (dm.learningCount + dm.knownCount > 0) {
+                <span class="count-tag text-amber"><strong>{{ dm.learningCount + dm.knownCount }}</strong> em consolidação</span>
+              }
+              @if (dm.automatedCount === 0 && dm.masteredCount === 0 && (dm.learningCount + dm.knownCount === 0)) {
+                <span class="count-tag text-muted">Ainda não praticado</span>
+              }
+            </div>
           </div>
         </div>
       }
     </div>
   </section>
 
-  <!-- ==================== HISTÓRICO DE TREINOS ==================== -->
+  <!-- ==================== 4. HISTÓRICO DE TREINOS COM DIAGNÓSTICO HEURÍSTICO ==================== -->
   <section class="sessions-history card">
-    <h2 class="section-title">Últimos Treinos Concluídos</h2>
+    <div class="panel-header-with-badge">
+      <div>
+        <h2 class="section-title">Últimos Treinos Concluídos</h2>
+        <p class="section-desc">Classificação real baseada em precisão e controle de ritmo.</p>
+      </div>
+    </div>
 
     @if (recentSessions().length === 0) {
       <div class="empty-state">
@@ -212,7 +254,15 @@
               <span class="history-meta">⏱ {{ formatDuration(s.totalDurationSeconds) }} • {{ s.totalQuestions }} questões</span>
             </div>
             <div class="history-right">
-              <span class="history-accuracy badge badge-att">{{ s.accuracyPercentage }}% acerto</span>
+              @if (s.isImpulsive) {
+                <span class="badge badge-impulsive">⚡ Ritmo Impulsivo</span>
+              } @else if (s.accuracyPercentage === 100) {
+                <span class="badge badge-perfect">✨ 100% Cirúrgico</span>
+              } @else if (s.accuracyPercentage >= 70) {
+                <span class="badge badge-consistent">🎯 {{ s.accuracyPercentage }}% Consistente</span>
+              } @else {
+                <span class="badge badge-challenge">🛡️ {{ s.accuracyPercentage }}% Desafio</span>
+              }
               <span class="history-xp badge badge-fox">+{{ s.xpEarned }} XP</span>
             </div>
           </div>
@@ -221,7 +271,7 @@
     }
   </section>
 
-  <!-- ==================== RECORDES PESSOAIS ==================== -->
+  <!-- ==================== 5. RECORDES PESSOAIS ==================== -->
   <section class="personal-records card">
     <h2 class="section-title">Recordes Pessoais</h2>
 

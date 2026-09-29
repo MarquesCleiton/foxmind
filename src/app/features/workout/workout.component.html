@@ -140,16 +140,29 @@
       <div class="summary-fox-header">
         <img src="fox-mascot.png" alt="FoxMind" class="summary-fox-img" />
         <div class="fox-speech-bubble animate-pop-in">
-          <h2>Treino Concluído!</h2>
-          <p>Você completou sua meta diária com consistência. <strong>Pode descansar por hoje.</strong></p>
+          <h2>{{ workout.sessionDiagnostics()?.speechTitle || 'Treino Concluído!' }}</h2>
+          <p>{{ workout.sessionDiagnostics()?.speechMessage }}</p>
         </div>
       </div>
+
+      <!-- Alerta de Ritmo Impulsivo (quando o usuário chuta sem ler) -->
+      @if (workout.sessionDiagnostics()?.isImpulsive) {
+        <div class="impulsive-alert-card animate-pop-in">
+          <span class="impulsive-icon">⚡</span>
+          <div class="impulsive-content">
+            <strong>Ritmo Excessivamente Rápido ({{ ((workout.sessionResult()?.averageResponseTimeMs || 0) / 1000).toFixed(1) }}s)</strong>
+            <p>Exercícios de raciocínio e cálculo mental exigem leitura e tempo de processamento. Concentre-se na precisão antes da velocidade.</p>
+          </div>
+        </div>
+      }
 
       <!-- Métricas Centrais -->
       <div class="metrics-grid">
         <div class="metric-card">
           <span class="metric-label">Precisão</span>
-          <span class="metric-value text-emerald">{{ workout.sessionResult()?.accuracyPercentage }}%</span>
+          <span class="metric-value" [ngClass]="workout.sessionDiagnostics()?.accuracyClass || 'acc-high'">
+            {{ workout.sessionResult()?.accuracyPercentage }}%
+          </span>
         </div>
         <div class="metric-card">
           <span class="metric-label">Tempo Médio</span>
@@ -167,46 +180,59 @@
         </div>
       </div>
 
-      <!-- Diagnóstico da Raposa: O que foi bem & Onde focar para melhorar (Item 2) -->
+      <!-- Diagnóstico da Raposa: O que foi bem & Onde focar para melhorar -->
       @if (workout.sessionDiagnostics(); as diag) {
         <section class="diagnostic-section">
-          <!-- Onde se destacou -->
-          <div class="diagnostic-card card card-strengths">
-            <div class="diag-header">
-              <span class="diag-icon">🌟</span>
-              <h3>Onde você se destacou</h3>
+          <!-- Onde se destacou (Apenas se houver pontos fortes legítimos) -->
+          @if (diag.strengths.length > 0) {
+            <div class="diagnostic-card card card-strengths">
+              <div class="diag-header">
+                <span class="diag-icon">🌟</span>
+                <h3>Onde você se destacou</h3>
+              </div>
+              <ul class="diag-list">
+                @for (item of diag.strengths; track item.title) {
+                  <li class="diag-item">
+                    <span class="diag-bullet">{{ item.icon }}</span>
+                    <div class="diag-content">
+                      <strong>{{ item.title }}</strong>
+                      <p>{{ item.detail }}</p>
+                    </div>
+                  </li>
+                }
+              </ul>
             </div>
-            <ul class="diag-list">
-              @for (item of diag.strengths; track item.title) {
-                <li class="diag-item">
-                  <span class="diag-bullet">{{ item.icon }}</span>
-                  <div class="diag-content">
-                    <strong>{{ item.title }}</strong>
-                    <p>{{ item.detail }}</p>
-                  </div>
-                </li>
-              }
-            </ul>
-          </div>
+          } @else if (diag.honestNotice) {
+            <!-- Aviso honesto e construtivo em vez de elogio falso -->
+            <div class="diagnostic-card card card-notice">
+              <div class="diag-header">
+                <span class="diag-icon">💡</span>
+                <h3>Atenção ao Ritmo e Precisão</h3>
+              </div>
+              <p class="diag-notice-text">{{ diag.honestNotice }}</p>
+            </div>
+          }
 
           <!-- Onde melhorar -->
-          <div class="diagnostic-card card card-improvements">
-            <div class="diag-header">
-              <span class="diag-icon">🎯</span>
-              <h3>Onde focar para evoluir</h3>
+          @if (diag.improvements.length > 0) {
+            <div class="diagnostic-card card card-improvements">
+              <div class="diag-header">
+                <span class="diag-icon">🎯</span>
+                <h3>Onde focar para evoluir</h3>
+              </div>
+              <ul class="diag-list">
+                @for (item of diag.improvements; track item.title) {
+                  <li class="diag-item">
+                    <span class="diag-bullet">{{ item.icon }}</span>
+                    <div class="diag-content">
+                      <strong>{{ item.title }}</strong>
+                      <p>{{ item.detail }}</p>
+                    </div>
+                  </li>
+                }
+              </ul>
             </div>
-            <ul class="diag-list">
-              @for (item of diag.improvements; track item.title) {
-                <li class="diag-item">
-                  <span class="diag-bullet">{{ item.icon }}</span>
-                  <div class="diag-content">
-                    <strong>{{ item.title }}</strong>
-                    <p>{{ item.detail }}</p>
-                  </div>
-                </li>
-              }
-            </ul>
-          </div>
+          }
         </section>
       }
 

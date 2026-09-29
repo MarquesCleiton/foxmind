@@ -69,6 +69,8 @@ export interface DailyWorkoutSession {
   categoriesTrained: CognitiveCategory[];
   completed: boolean;
   createdAt: number;
+  isImpulsive?: boolean;
+  sessionTag?: 'Cirúrgico' | 'Consistente' | 'Desafio' | 'Impulsivo';
 }
 
 export interface CognitiveProfile {

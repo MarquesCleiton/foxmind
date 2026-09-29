@@ -28,10 +28,16 @@
   font-size: 1.15rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 16px;
+  margin-bottom: 2px;
 }
 
-/* ==================== DIAGNÓSTICO GERAL DA RAPOSA ==================== */
+.section-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+/* ==================== 1. DIAGNÓSTICO EXECUTIVO DA RAPOSA ==================== */
 .diagnosis-card {
   background: linear-gradient(135deg, rgba(20, 28, 46, 0.95), rgba(26, 37, 60, 0.9));
   border: 1px solid rgba(249, 115, 22, 0.25);
@@ -40,6 +46,7 @@
   flex-direction: column;
   gap: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-lg);
 }
 
 .diagnosis-top {
@@ -49,11 +56,11 @@
 }
 
 .fox-diag-avatar {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 4px 14px var(--fox-glow);
+  box-shadow: 0 4px 16px var(--fox-glow);
   flex-shrink: 0;
 }
 
@@ -66,15 +73,16 @@
 .diagnosis-score-box {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  flex: 1;
 }
 
 .diag-score-label {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .diag-score-row {
@@ -85,7 +93,7 @@
 
 .diag-score-num {
   font-family: var(--font-mono);
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1;
@@ -97,6 +105,55 @@
   color: var(--text-muted);
 }
 
+.diag-sub-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.calibration-badge-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.badge-calib-text {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.calib-mini-track {
+  width: 120px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.calib-mini-bar {
+  height: 100%;
+  background: #fbbf24;
+  border-radius: var(--radius-full);
+}
+
+.badge-consolidated {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #34d399;
+}
+
+.momentum-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+}
+
 .fox-advice-text {
   font-size: 0.88rem;
   color: var(--text-secondary);
@@ -105,255 +162,256 @@
   padding: 10px 14px;
   border-radius: var(--radius-sm);
   border-left: 3px solid var(--fox-primary);
+  margin: 0;
 }
 
 .fox-advice-text strong {
   color: var(--fox-light);
 }
 
-/* Grade de Ponto Forte & Onde Focar */
-.strengths-weakness-grid {
+/* Painel Cirúrgico de Foco Imediato */
+.executive-focus-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 @media (min-width: 480px) {
-  .strengths-weakness-grid {
+  .executive-focus-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .tile-action {
+    grid-column: span 2;
   }
 }
 
-.focus-tile {
+.exec-tile {
   border-radius: var(--radius-md);
-  padding: 14px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+}
+
+.tile-bottleneck {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.28);
 }
 
 .tile-strength {
   background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid rgba(16, 185, 129, 0.28);
 }
 
-.tile-weakness {
+.tile-action {
   background: rgba(249, 115, 22, 0.08);
-  border: 1px solid rgba(249, 115, 22, 0.3);
+  border: 1px solid rgba(249, 115, 22, 0.28);
 }
 
-.focus-header {
+.exec-tile-header {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.focus-icon {
-  font-size: 1.1rem;
+.exec-icon {
+  font-size: 1rem;
 }
 
-.tile-strength .focus-title {
-  font-size: 0.78rem;
+.tile-bottleneck .exec-label {
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-att);
+  color: #f87171;
 }
 
-.tile-weakness .focus-title {
-  font-size: 0.78rem;
+.tile-strength .exec-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #34d399;
+}
+
+.tile-action .exec-label {
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--fox-primary);
 }
 
-.focus-body {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.focus-skill-row {
+.exec-tile-val {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
 }
 
-.focus-name {
+.exec-tile-val strong {
   font-size: 0.92rem;
-  font-weight: 700;
   color: var(--text-primary);
 }
 
-.focus-score {
+.exec-score {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: var(--text-muted);
 }
 
-.focus-tip {
-  font-size: 0.78rem;
+.exec-hint {
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
-/* ==================== RÉGUA DE NÍVEIS ==================== */
-.scale-legend-card {
-  padding: 12px 16px;
+.exec-action-text {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ==================== 2. MATRIZ DE EQUILÍBRIO COGNITIVO (1-GLANCE) ==================== */
+.skills-matrix-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
+  padding: 18px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
 }
 
-.scale-title {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-}
-
-.scale-tiers {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-@media (min-width: 440px) {
-  .scale-tiers {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.scale-tier {
+.panel-header-with-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.tier-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dot-practice { background: var(--color-spd); }
-.dot-developing { background: var(--color-mem); }
-.dot-advanced { background: var(--color-calc); }
-.dot-master { background: var(--color-att); }
-
-.tier-name {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-/* Badges de Tiers */
-.tier-master {
-  background: var(--color-att-subtle);
-  color: var(--color-att);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.tier-advanced {
-  background: var(--color-calc-subtle);
-  color: var(--color-calc);
-  border: 1px solid rgba(6, 182, 212, 0.3);
-}
-
-.tier-developing {
-  background: var(--color-mem-subtle);
-  color: var(--color-mem);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-}
-
-.tier-practice {
-  background: var(--color-spd-subtle);
-  color: var(--color-spd);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-/* ==================== DETALHAMENTO DE HABILIDADES ==================== */
-.skills-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.skill-card-detailed {
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.skill-header-row {
-  display: flex;
-  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.skill-title-wrap {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.skill-icon-emoji {
-  font-size: 1.3rem;
-  line-height: 1.2;
-}
-
-.skill-titles {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.skill-title-name {
-  font-size: 0.95rem;
+.sub-badge {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--fox-primary);
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--text-primary);
-}
-
-.skill-title-desc {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  line-height: 1.3;
-}
-
-.skill-score-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(249, 115, 22, 0.3);
   flex-shrink: 0;
 }
 
-.skill-num-score {
+.matrix-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.matrix-row-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  overflow: hidden;
+}
+
+.matrix-row-card:hover {
+  border-color: rgba(249, 115, 22, 0.35);
+}
+
+.matrix-row-card.is-expanded {
+  border-color: var(--fox-primary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.matrix-row-main {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.matrix-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.matrix-skill-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.skill-icon-emoji {
+  font-size: 1.15rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.skill-name-text {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.tag-bottleneck {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.tag-strength {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.matrix-score-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.matrix-score-num {
   font-family: var(--font-mono);
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   font-weight: 800;
   color: var(--text-primary);
 }
 
-.skill-num-score small {
-  font-size: 0.75rem;
-  font-weight: 500;
+.matrix-score-num small {
+  font-size: 0.72rem;
   color: var(--text-muted);
+}
+
+.matrix-meter-full {
+  width: 100%;
 }
 
 .meter-track {
   width: 100%;
-  height: 8px;
-  background: rgba(0, 0, 0, 0.3);
+  height: 6px;
+  background: rgba(0, 0, 0, 0.35);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -369,215 +427,191 @@
 .bar-att { background-color: var(--color-att); }
 .bar-spd { background-color: var(--color-spd); }
 
-.skill-tip-box {
-  background: var(--bg-surface-subtle);
-  border-radius: var(--radius-sm);
-  padding: 8px 10px;
-  font-size: 0.78rem;
+.matrix-card-footer {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
-  line-height: 1.35;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 2px;
 }
 
-.tip-label {
+.trend-badge {
+  font-size: 0.7rem;
   font-weight: 700;
-  color: var(--fox-light);
-  flex-shrink: 0;
+  font-family: var(--font-mono);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
 }
 
-.tip-text {
+.trend-up {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.trend-down {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.trend-stable {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.expand-tip-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.expand-tip-btn:hover {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--fox-primary);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.matrix-drawer {
+  padding: 10px 14px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drawer-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.drawer-desc strong {
   color: var(--text-secondary);
 }
 
-/* ==================== HISTÓRICO DE SESSÕES ==================== */
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.history-item {
-  background: var(--bg-surface-subtle);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.history-left {
+.drawer-strategy {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  background: rgba(249, 115, 22, 0.06);
+  border-left: 2px solid var(--fox-primary);
+  padding: 6px 10px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
-.history-date {
-  font-size: 0.9rem;
+.strategy-badge {
+  font-size: 0.7rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--fox-light);
 }
 
-.history-meta {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.history-right {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 24px 0;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-/* ==================== RECORDES PESSOAIS ==================== */
-.records-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.record-card {
-  background: var(--bg-surface-subtle);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.record-cat {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.record-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.record-stat {
+.drawer-strategy p {
   font-size: 0.78rem;
   color: var(--text-secondary);
+  line-height: 1.35;
+  margin: 0;
 }
 
-.record-stat strong {
-  color: var(--fox-primary);
-  font-family: var(--font-mono);
-}
-
-/* ==================== PAINEL DE DOMÍNIO MATEMÁTICO ==================== */
+/* ==================== 3. DOMÍNIO EM MATEMÁTICA MENTAL ==================== */
 .math-mastery-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.panel-header-with-badge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sub-badge {
-  background: rgba(249, 115, 22, 0.15);
-  color: var(--fox-primary);
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(249, 115, 22, 0.3);
+  gap: 14px;
+  padding: 18px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
 }
 
 .mastery-legend-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: -6px;
 }
 
 .m-pill {
   font-size: 0.72rem;
   font-weight: 600;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
 }
 
-.math-domain-cards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.math-domain-card {
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
+.math-domain-compact-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.domain-card-header {
+.math-compact-item {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.math-compact-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.domain-name-wrap {
+.math-domain-title {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.domain-icon {
-  font-size: 1.3rem;
-  line-height: 1;
+.math-domain-icon {
+  font-size: 1.15rem;
 }
 
-.domain-name {
-  font-size: 0.95rem;
+.math-domain-name {
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--text-primary);
-  display: block;
 }
 
-.domain-facts-count {
+.math-facts-sub {
   font-size: 0.72rem;
   color: var(--text-muted);
 }
 
-.domain-stats-pill {
+.math-metrics-right {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .domain-avg-time {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 700;
   font-family: var(--font-mono);
   color: var(--color-spd);
   background: var(--color-spd-subtle);
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: var(--radius-full);
+}
+
+.domain-accuracy {
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .mastery-segmented-bar {
   width: 100%;
-  height: 8px;
+  height: 6px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-full);
   display: flex;
@@ -589,30 +623,228 @@
   transition: width var(--transition-normal);
 }
 
-.seg-auto {
-  background: #3b82f6; /* 🔵 Azul Automatizado */
-}
-
-.seg-master {
-  background: #10b981; /* 🟢 Verde Dominado */
-}
-
-.seg-known {
-  background: #f59e0b; /* 🟡 Amarelo Conhecido */
-}
-
-.seg-learning {
-  background: #f97316; /* 🟠 Laranja Aprendizado */
-}
+.seg-auto { background: #3b82f6; }
+.seg-master { background: #10b981; }
+.seg-known { background: #f59e0b; }
+.seg-learning { background: #f97316; }
 
 .domain-counts-footer {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 0.74rem;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.72rem;
   color: var(--text-muted);
+}
+
+.domain-tags-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .count-tag strong {
   font-weight: 700;
+}
+
+.text-cyan { color: #38bdf8; }
+.text-emerald { color: #34d399; }
+.text-amber { color: #fbbf24; }
+
+/* ==================== 4. HISTÓRICO DE TREINOS ==================== */
+.sessions-history {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-date {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.history-meta {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.history-right {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.badge-impulsive {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badge-perfect {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badge-consistent {
+  background: rgba(6, 182, 212, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badge-challenge {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badge-fox {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--fox-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+/* ==================== 5. RECORDES PESSOAIS ==================== */
+.personal-records {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.records-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.record-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.record-cat {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.record-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.record-stat {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+.record-stat strong {
+  color: var(--fox-primary);
+  font-family: var(--font-mono);
+}
+
+/* Badges de Tiers */
+.tier-master {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+.tier-advanced {
+  background: rgba(6, 182, 212, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+.tier-developing {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+.tier-practice {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
 }

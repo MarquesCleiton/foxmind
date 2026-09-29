@@ -283,11 +283,64 @@
   color: var(--text-primary);
 }
 
-.text-emerald { color: var(--color-att); }
-.text-amber { color: var(--fox-primary); }
+.text-emerald, .acc-high { color: var(--color-att); }
+.text-amber, .acc-mid { color: var(--fox-primary); }
+.acc-low { color: #f43f5e; }
+
+/* Alerta de Impulsividade */
+.impulsive-alert-card {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(249, 115, 22, 0.08));
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.1);
+}
+
+.impulsive-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.impulsive-content strong {
+  font-size: 0.95rem;
+  color: #f43f5e;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.impulsive-content p {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
 
 .font-compact {
   font-size: 1.45rem !important;
+}
+
+/* Card de Atenção Honesta */
+.card-notice {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.10), var(--bg-surface));
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+
+.card-notice .diag-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.diag-notice-text {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
 }
 
 /* Diagnóstico da Raposa */

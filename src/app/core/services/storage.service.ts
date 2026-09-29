@@ -135,15 +135,43 @@ export class StorageService {
     // Cada 200 XP = 1 Nível
     const newLevel = Math.max(1, Math.floor(newXp / 200) + 1);
 
-    // Atualização leve dos escores cognitivos baseada na acurácia da sessão
+    // Atualização heurística dos escores cognitivos (Speed-Accuracy Trade-off + EMA)
     const newScores = { ...profile.cognitiveScores };
-    session.categoriesTrained.forEach(cat => {
-      const field = this.categoryToScoreField(cat);
-      if (field) {
-        const delta = session.accuracyPercentage >= 80 ? 2 : (session.accuracyPercentage >= 60 ? 1 : -1);
-        newScores[field] = Math.min(100, Math.max(10, newScores[field] + delta));
-      }
-    });
+    if (!session.isImpulsive) {
+      const targetMsMap: Record<string, number> = {
+        calculation: 4000,
+        memory: 3000,
+        attention: 1500,
+        speed: 800,
+        spatial: 3000,
+        flexibility: 3500
+      };
+
+      session.categoriesTrained.forEach(cat => {
+        const field = this.categoryToScoreField(cat);
+        if (field) {
+          const targetMs = targetMsMap[field] || 3000;
+          const avgTimeMs = session.averageResponseTimeMs || targetMs;
+
+          // Fator de velocidade: pondera o tempo médio com relação ao tempo ideal
+          const speedFactor = Math.max(10, Math.min(100, Math.round(100 - ((avgTimeMs - targetMs) / (targetMs * 1.5)) * 40)));
+          const sessionPerformance = Math.round((session.accuracyPercentage * 0.70) + (speedFactor * 0.30));
+
+          // Média móvel exponencial (EMA - alpha 0.25): evolução estável e imune a ruídos atípicos
+          const currentScore = newScores[field] ?? 40;
+          const updatedScore = Math.round((0.25 * sessionPerformance) + (0.75 * currentScore));
+          newScores[field] = Math.min(100, Math.max(10, updatedScore));
+        }
+      });
+    } else {
+      // Se a sessão foi puramente impulsiva (spam de chutes), aplica leve ajuste de calibração (-1)
+      session.categoriesTrained.forEach(cat => {
+        const field = this.categoryToScoreField(cat);
+        if (field) {
+          newScores[field] = Math.max(10, (newScores[field] ?? 40) - 1);
+        }
+      });
+    }
 
     await this.updateProfile({
       streakCurrent: newStreak,
