@@ -11,7 +11,11 @@
 
       <div class="warmup-info-pills">
         <span class="badge badge-fox">⏱ {{ workout.selectedMinutes() }} minutos</span>
-        <span class="badge badge-calc">🧠 4 Habilidades</span>
+        @if (workout.activeMathDomain(); as dom) {
+          <span class="badge badge-calc">🧮 {{ getMathDomainLabel(dom) }}</span>
+        } @else {
+          <span class="badge badge-calc">🧠 4 Habilidades</span>
+        }
         <span class="badge badge-att">⚡ Dificuldade Adaptativa</span>
       </div>
 

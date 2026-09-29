@@ -35,6 +35,23 @@ export class WorkoutComponent implements OnInit {
   }
 
   public startAnotherSession(): void {
-    this.workout.startDailyWorkout(8);
+    const domain = this.workout.activeMathDomain();
+    if (domain) {
+      this.workout.startMathDomainWorkout(domain, 3);
+    } else {
+      this.workout.startDailyWorkout(8);
+    }
+  }
+
+  public getMathDomainLabel(domain: string): string {
+    switch (domain) {
+      case 'ADDITION': return '➕ Adição';
+      case 'SUBTRACTION': return '➖ Subtração';
+      case 'MULTIPLICATION': return '✖️ Multiplicação';
+      case 'DIVISION': return '➗ Divisão';
+      case 'PERCENTAGE': return '% Porcentagem';
+      case 'MIXED': return '⚡ Desafio Misto';
+      default: return domain;
+    }
   }
 }

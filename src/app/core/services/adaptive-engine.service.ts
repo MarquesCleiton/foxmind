@@ -1,14 +1,17 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { 
   CognitiveCategory, 
   ExerciseQuestion, 
   ExerciseType 
 } from '../models/cognitive.models';
+import { MentalMathService } from './mental-math.service';
+import { MathDomain } from '../models/mental-math.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AdaptiveEngineService {
+  private mentalMath = inject(MentalMathService);
 
   // Ajusta a dificuldade adaptativa (1 a 100) com base no desempenho
   public calculateNextDifficulty(
@@ -42,7 +45,9 @@ export class AdaptiveEngineService {
   public generateQuestion(type: ExerciseType, difficulty: number): ExerciseQuestion {
     switch (type) {
       case 'MENTAL_MATH':
-        return this.generateMentalMath(difficulty);
+        return this.mentalMath.generateQuestion('MIXED', difficulty);
+      case 'PERCENTAGE':
+        return this.mentalMath.generateQuestion('PERCENTAGE', difficulty);
       case 'WORD_PROBLEM':
         return this.generateWordProblem(difficulty);
       case 'NUMBER_SEQUENCE':
@@ -60,8 +65,13 @@ export class AdaptiveEngineService {
       case 'LOGICAL_PATTERN':
         return this.generateLogicalPattern(difficulty);
       default:
-        return this.generateMentalMath(difficulty);
+        return this.mentalMath.generateQuestion('MIXED', difficulty);
     }
+  }
+
+  // Gera uma questão especificamente para um domínio matemático (Adição, Subtração, Multiplicação, Divisão, Porcentagem)
+  public generateMathDomainQuestion(domain: MathDomain | 'MIXED', difficulty: number): ExerciseQuestion {
+    return this.mentalMath.generateQuestion(domain, difficulty);
   }
 
   // 1. CÁLCULO MENTAL PROCEDURAL

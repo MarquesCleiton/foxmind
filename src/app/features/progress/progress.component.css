@@ -473,3 +473,146 @@
   color: var(--fox-primary);
   font-family: var(--font-mono);
 }
+
+/* ==================== PAINEL DE DOMÍNIO MATEMÁTICO ==================== */
+.math-mastery-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-header-with-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sub-badge {
+  background: rgba(249, 115, 22, 0.15);
+  color: var(--fox-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.mastery-legend-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -6px;
+}
+
+.m-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.math-domain-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.math-domain-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.domain-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.domain-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.domain-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.domain-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+}
+
+.domain-facts-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.domain-stats-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.domain-avg-time {
+  font-size: 0.76rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--color-spd);
+  background: var(--color-spd-subtle);
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+.mastery-segmented-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-full);
+  display: flex;
+  overflow: hidden;
+}
+
+.seg {
+  height: 100%;
+  transition: width var(--transition-normal);
+}
+
+.seg-auto {
+  background: #3b82f6; /* 🔵 Azul Automatizado */
+}
+
+.seg-master {
+  background: #10b981; /* 🟢 Verde Dominado */
+}
+
+.seg-known {
+  background: #f59e0b; /* 🟡 Amarelo Conhecido */
+}
+
+.seg-learning {
+  background: #f97316; /* 🟠 Laranja Aprendizado */
+}
+
+.domain-counts-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.count-tag strong {
+  font-weight: 700;
+}

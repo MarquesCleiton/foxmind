@@ -9,7 +9,8 @@ export type CognitiveCategory =
 
 export type ExerciseType = 
   | 'MENTAL_MATH' 
-  | 'WORD_PROBLEM'      // Distância, Velocidade, Tempo, Proporções, Porcentagem Contextual
+  | 'PERCENTAGE'         // Módulo Dedicado de Porcentagem (NeuroSprint Módulo Próprio)
+  | 'WORD_PROBLEM'      // Distância, Velocidade, Tempo, Proporções, Contexto
   | 'NUMBER_SEQUENCE' 
   | 'GENIUS_COLORS' 
   | 'SPATIAL_GRID' 
@@ -32,6 +33,9 @@ export interface ExerciseQuestion {
   hintStrategy?: string;  // Ajuda sutil da Raposa durante o exercício
   timeLimitSeconds?: number;
   hasTimerBar?: boolean;
+  knowledgeId?: string;
+  mathDomain?: 'ADDITION' | 'SUBTRACTION' | 'MULTIPLICATION' | 'DIVISION' | 'PERCENTAGE';
+  mathFormat?: string;
 }
 
 export interface ExerciseAttempt {
@@ -48,6 +52,8 @@ export interface ExerciseAttempt {
   questionPrompt?: string;
   explanationStrategy?: string;
   isTimeout?: boolean;
+  knowledgeId?: string;
+  mathDomain?: 'ADDITION' | 'SUBTRACTION' | 'MULTIPLICATION' | 'DIVISION' | 'PERCENTAGE';
 }
 
 export interface DailyWorkoutSession {

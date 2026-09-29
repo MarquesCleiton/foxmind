@@ -8,6 +8,11 @@ import {
   PendingReviewError,
   CognitiveCategory
 } from '../models/cognitive.models';
+import { 
+  MathKnowledgeItem, 
+  MathDomain, 
+  DomainMasterySummary 
+} from '../models/mental-math.models';
 
 export class FoxMindDatabase extends Dexie {
   profile!: Table<CognitiveProfile, number>;
@@ -15,6 +20,7 @@ export class FoxMindDatabase extends Dexie {
   attempts!: Table<ExerciseAttempt, number>;
   records!: Table<PersonalRecord, string>;
   errorBank!: Table<PendingReviewError, number>;
+  mathMastery!: Table<MathKnowledgeItem, string>;
 
   constructor() {
     super('FoxMindDB');
@@ -24,6 +30,9 @@ export class FoxMindDatabase extends Dexie {
       attempts: '++id, sessionId, category, type, isCorrect, timestamp',
       records: 'category, lastUpdated',
       errorBank: '++id, sessionId, resolved, createdAt'
+    });
+    this.version(2).stores({
+      mathMastery: 'knowledgeId, domain, familyId, masteryLevel, lastReviewedAt'
     });
   }
 }
@@ -203,17 +212,84 @@ export class StorageService {
     await this.db.records.put(updated);
   }
 
+  // ==================== MATEMÁTICA MENTAL & DOMÍNIO ====================
+  public async getMathMastery(knowledgeId: string): Promise<MathKnowledgeItem | undefined> {
+    return await this.db.mathMastery.get(knowledgeId);
+  }
+
+  public async getAllMathMastery(): Promise<MathKnowledgeItem[]> {
+    return await this.db.mathMastery.toArray();
+  }
+
+  public async getMathMasteryByDomain(domain: MathDomain): Promise<MathKnowledgeItem[]> {
+    return await this.db.mathMastery.where({ domain }).toArray();
+  }
+
+  public async saveMathMastery(item: MathKnowledgeItem): Promise<void> {
+    await this.db.mathMastery.put(item);
+  }
+
+  public async saveMathMasteryBulk(items: MathKnowledgeItem[]): Promise<void> {
+    await this.db.mathMastery.bulkPut(items);
+  }
+
+  public async getDomainMasterySummaries(): Promise<DomainMasterySummary[]> {
+    const all = await this.getAllMathMastery();
+    const domains: { domain: MathDomain; domainName: string; icon: string }[] = [
+      { domain: 'ADDITION', domainName: 'Adição', icon: '➕' },
+      { domain: 'SUBTRACTION', domainName: 'Subtração', icon: '➖' },
+      { domain: 'MULTIPLICATION', domainName: 'Multiplicação', icon: '✖️' },
+      { domain: 'DIVISION', domainName: 'Divisão', icon: '➗' },
+      { domain: 'PERCENTAGE', domainName: 'Porcentagem', icon: '%' }
+    ];
+
+    return domains.map(d => {
+      const items = all.filter(it => it.domain === d.domain);
+      const total = items.length;
+      const automated = items.filter(it => it.masteryLevel === 'AUTOMATED').length;
+      const mastered = items.filter(it => it.masteryLevel === 'MASTERED').length;
+      const known = items.filter(it => it.masteryLevel === 'KNOWN').length;
+      const learning = items.filter(it => it.masteryLevel === 'LEARNING').length;
+      const unmastered = items.filter(it => it.masteryLevel === 'UNMASTERED').length;
+
+      const attempted = items.filter(it => it.attempts > 0);
+      const avgTime = attempted.length > 0
+        ? Math.round(attempted.reduce((acc, cur) => acc + cur.avgResponseTimeMs, 0) / attempted.length)
+        : 0;
+
+      const totalCorrect = attempted.reduce((acc, cur) => acc + cur.correctCount, 0);
+      const totalAttempts = attempted.reduce((acc, cur) => acc + cur.attempts, 0);
+      const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+
+      return {
+        domain: d.domain,
+        domainName: d.domainName,
+        icon: d.icon,
+        totalFacts: total,
+        automatedCount: automated,
+        masteredCount: mastered,
+        knownCount: known,
+        learningCount: learning,
+        unmasteredCount: unmastered,
+        averageTimeMs: avgTime,
+        accuracyPercentage: accuracy
+      };
+    });
+  }
+
   // Backup e Restauração 100% Client-side
   public async exportAllData(): Promise<string> {
     const profile = await this.getProfile();
     const sessions = await this.db.sessions.toArray();
     const records = await this.db.records.toArray();
+    const mathMastery = await this.db.mathMastery.toArray();
     const exportObject = {
-      foxmind_version: '1.0',
+      foxmind_version: '2.0',
       exportedAt: new Date().toISOString(),
       profile,
       sessions,
-      records
+      records,
+      mathMastery
     };
     return JSON.stringify(exportObject, null, 2);
   }
@@ -231,6 +307,9 @@ export class StorageService {
       if (data.records && Array.isArray(data.records)) {
         await this.db.records.bulkPut(data.records);
       }
+      if (data.mathMastery && Array.isArray(data.mathMastery)) {
+        await this.db.mathMastery.bulkPut(data.mathMastery);
+      }
       return true;
     } catch (e) {
       console.error('Falha ao importar dados:', e);
@@ -243,6 +322,7 @@ export class StorageService {
     await this.db.attempts.clear();
     await this.db.records.clear();
     await this.db.errorBank.clear();
+    await this.db.mathMastery.clear();
     await this.db.profile.put(DEFAULT_PROFILE);
     this.profileSignal.set(DEFAULT_PROFILE);
   }

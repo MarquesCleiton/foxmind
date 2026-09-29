@@ -16,11 +16,13 @@ export class ActiveExerciseComponent implements OnDestroy {
   public onAnswer = output<{ answer: any; isTimeout?: boolean }>();
 
   // Estados Locais para Sequência e Grade
-  public memoryRevealed = signal<boolean>(true);
+  public memoryStage = signal<'PRE_START' | 'COUNTDOWN' | 'MEMORIZE' | 'INPUT'>('INPUT');
+  public countdownNumber = signal<number>(3);
+  public memoryRevealed = signal<boolean>(false);
   public userSequenceInput = signal<string>('');
   public selectedGridCells = signal<number[]>([]);
   public orderedSelected = signal<number[]>([]);
-  public remainingOrderingNumbers = signal<number[]>([]);
+  public allOrderingNumbers = signal<number[]>([]);
   public geniusUserSteps = signal<string[]>([]);
   public activeGeniusColor = signal<string | null>(null);
   public geniusCanInput = signal<boolean>(false);
@@ -37,12 +39,34 @@ export class ActiveExerciseComponent implements OnDestroy {
 
   private timeoutIds: any[] = [];
   private timerInterval: any = null;
+  private countdownTimer: any = null;
 
   constructor() {
     effect(() => {
       const q = this.question();
       this.resetExerciseState(q);
     });
+  }
+
+  public isMemorySequenceTest(type: string): boolean {
+    return type === 'NUMBER_SEQUENCE' || type === 'SPATIAL_GRID' || type === 'GENIUS_COLORS';
+  }
+
+  public isReverseSequence(): boolean {
+    const q = this.question();
+    if (q?.data?.isReverse) return true;
+    if (q?.prompt && (q.prompt.includes('CONTRÁRIO') || q.prompt.includes('INVERSA') || q.prompt.includes('inversa'))) {
+      return true;
+    }
+    return false;
+  }
+
+  public sequenceLength(): number {
+    return this.question()?.data?.sequence?.length || 0;
+  }
+
+  public spatialTargetsCount(): number {
+    return this.question()?.data?.targets?.length || 0;
   }
 
   private resetExerciseState(q: ExerciseQuestion): void {
@@ -54,35 +78,77 @@ export class ActiveExerciseComponent implements OnDestroy {
     this.geniusReplayRemaining.set(1);
     this.activeGeniusColor.set(null);
     this.disabledOptions.set([]);
-    
-    // Cada novo exercício SEMPRE inicia com a dica recolhida
     this.hintVisible.set(false);
+    this.hasTimer.set(false);
 
-    // Configurar Barra de Tempo
-    if (q.hasTimerBar && q.timeLimitSeconds && !this.isReviewMode()) {
-      this.startCountdownTimer(q.timeLimitSeconds);
-    } else {
-      this.hasTimer.set(false);
+    if (q.type === 'NUMBER_ORDERING') {
+      this.orderedSelected.set([]);
+      this.allOrderingNumbers.set([...(q.data?.numbers || [])]);
     }
 
-    if (q.type === 'NUMBER_SEQUENCE') {
+    // Para testes de memorização (Item 2): Inicia em PRE_START com botão explícito
+    if (this.isMemorySequenceTest(q.type) && !this.isReviewMode()) {
+      this.memoryStage.set('PRE_START');
+      this.memoryRevealed.set(false);
+    } else {
+      this.memoryStage.set('INPUT');
       this.memoryRevealed.set(true);
-      const displayTime = q.data?.displayTimeMs || 2500;
+
+      // Configurar Barra de Tempo imediata para testes que não são de memorização prévia
+      if (q.hasTimerBar && q.timeLimitSeconds && !this.isReviewMode()) {
+        this.startCountdownTimer(q.timeLimitSeconds);
+      }
+    }
+  }
+
+  // Contador de 3 Segundos antes de Exibir a Sequência para Memorizar (Item 2)
+  public startMemoryCountdown(): void {
+    const q = this.question();
+    this.clearAllTimers();
+    this.memoryStage.set('COUNTDOWN');
+    this.countdownNumber.set(3);
+
+    let count = 3;
+    this.countdownTimer = setInterval(() => {
+      count--;
+      if (count > 0) {
+        this.countdownNumber.set(count);
+      } else {
+        clearInterval(this.countdownTimer);
+        this.countdownTimer = null;
+        this.launchMemoryDisplay(q);
+      }
+    }, 1000);
+  }
+
+  private launchMemoryDisplay(q: ExerciseQuestion): void {
+    if (q.type === 'NUMBER_SEQUENCE') {
+      this.memoryStage.set('MEMORIZE');
+      this.memoryRevealed.set(true);
+      const displayTime = q.data?.displayTimeMs || 3000;
       const t = setTimeout(() => {
         this.memoryRevealed.set(false);
+        this.memoryStage.set('INPUT');
+        // Agora inicia a contagem do tempo limite para responder
+        if (q.hasTimerBar && q.timeLimitSeconds && !this.isReviewMode()) {
+          this.startCountdownTimer(q.timeLimitSeconds);
+        }
       }, displayTime);
       this.timeoutIds.push(t);
     } else if (q.type === 'SPATIAL_GRID') {
+      this.memoryStage.set('MEMORIZE');
       this.memoryRevealed.set(true);
-      const flashTime = q.data?.flashTimeMs || 2000;
+      const flashTime = q.data?.flashTimeMs || 2500;
       const t = setTimeout(() => {
         this.memoryRevealed.set(false);
+        this.memoryStage.set('INPUT');
+        if (q.hasTimerBar && q.timeLimitSeconds && !this.isReviewMode()) {
+          this.startCountdownTimer(q.timeLimitSeconds);
+        }
       }, flashTime);
       this.timeoutIds.push(t);
-    } else if (q.type === 'NUMBER_ORDERING') {
-      this.orderedSelected.set([]);
-      this.remainingOrderingNumbers.set([...(q.data?.numbers || [])]);
     } else if (q.type === 'GENIUS_COLORS') {
+      this.memoryStage.set('INPUT');
       this.runGeniusSequence(q.data?.sequence || [], q.data?.speedMs || 500);
     }
   }
@@ -212,14 +278,19 @@ export class ActiveExerciseComponent implements OnDestroy {
     this.onAnswer.emit({ answer: sorted, isTimeout: false });
   }
 
-  // Ordenação Numérica
+  // Ordenação Numérica (Item 3: Botões ficam bloqueados sem sumir nem reorganizar)
+  public isNumberOrdered(num: number): boolean {
+    return this.orderedSelected().includes(num);
+  }
+
   public pickOrderingNumber(num: number): void {
+    if (this.isNumberOrdered(num)) return;
+
     const expected = this.question().expectedAnswer as number[];
     const currentPickIndex = this.orderedSelected().length;
 
     const newOrdered = [...this.orderedSelected(), num];
     this.orderedSelected.set(newOrdered);
-    this.remainingOrderingNumbers.set(this.remainingOrderingNumbers().filter(n => n !== num));
 
     if (num !== expected[currentPickIndex]) {
       this.onAnswer.emit({ answer: newOrdered, isTimeout: false });
@@ -241,10 +312,24 @@ export class ActiveExerciseComponent implements OnDestroy {
     return this.disabledOptions().includes(val);
   }
 
+  public showsEqualsSign(): boolean {
+    const eq = this.question()?.data?.equation || '';
+    return !eq.includes('=') && !eq.includes('?') && !eq.includes(':') && !eq.includes('≈');
+  }
+
+  public isLongEquation(): boolean {
+    const eq = this.question()?.data?.equation || '';
+    return eq.length > 12;
+  }
+
   private clearAllTimers(): void {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
+    }
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = null;
     }
     this.timeoutIds.forEach(t => clearTimeout(t));
     this.timeoutIds = [];

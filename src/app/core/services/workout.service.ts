@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { StorageService } from './storage.service';
 import { AudioHapticService } from './audio-haptic.service';
 import { AdaptiveEngineService } from './adaptive-engine.service';
+import { MentalMathService } from './mental-math.service';
 import { 
   CognitiveCategory, 
   DailyWorkoutSession, 
@@ -10,6 +11,7 @@ import {
   ExerciseType, 
   PendingReviewError 
 } from '../models/cognitive.models';
+import { MathDomain } from '../models/mental-math.models';
 
 export type WorkoutState = 'IDLE' | 'WARMUP' | 'EXERCISING' | 'ERROR_REVIEW' | 'SUMMARY';
 
@@ -40,6 +42,7 @@ export class WorkoutService {
   private storage = inject(StorageService);
   private audio = inject(AudioHapticService);
   private engine = inject(AdaptiveEngineService);
+  private mentalMath = inject(MentalMathService);
 
   // Estados Reativos do Treino
   public state = signal<WorkoutState>('IDLE');
@@ -47,6 +50,7 @@ export class WorkoutService {
   public currentQuestionIndex = signal<number>(0);
   public totalQuestionsCount = signal<number>(12);
   public sessionProgressPercent = signal<number>(0);
+  public activeMathDomain = signal<MathDomain | 'MIXED' | null>(null);
   
   // Feedback imediato sutil (sem interromper)
   public feedback = signal<{ isCorrect: boolean; text: string } | null>(null);
@@ -72,6 +76,7 @@ export class WorkoutService {
   // Inicia o Treino Diário
   public startDailyWorkout(targetMinutes?: number): void {
     const mins = targetMinutes ?? this.storage.profileSignal().targetMinutes ?? 8;
+    this.activeMathDomain.set(null);
     this.selectedMinutes.set(mins);
     this.sessionId = 'sesh-' + Date.now().toString(36);
     this.sessionAttempts = [];
@@ -96,6 +101,34 @@ export class WorkoutService {
     this.state.set('WARMUP');
   }
 
+  // Inicia Treino Focado em um Módulo de Matemática Mental (Sec. 2)
+  public startMathDomainWorkout(domain: MathDomain | 'MIXED', targetMinutes = 3): void {
+    this.activeMathDomain.set(domain);
+    this.selectedMinutes.set(targetMinutes);
+    this.sessionId = 'math-' + domain.toLowerCase() + '-' + Date.now().toString(36);
+    this.sessionAttempts = [];
+    this.pendingErrors = [];
+    this.consecutiveErrors = 0;
+    this.naturalHintActive.set(false);
+    this.sessionStartTime = Date.now();
+
+    const profile = this.storage.profileSignal();
+    this.currentDifficulty = profile.cognitiveScores.calculation || 40;
+
+    const count = targetMinutes <= 3 ? 6 : (targetMinutes <= 8 ? 12 : 20);
+    const queue: ExerciseQuestion[] = [];
+    for (let i = 0; i < count; i++) {
+      queue.push(this.engine.generateMathDomainQuestion(domain, this.currentDifficulty));
+    }
+
+    this.questionsQueue = queue;
+    this.totalQuestionsCount.set(queue.length);
+    this.currentQuestionIndex.set(0);
+    this.sessionProgressPercent.set(0);
+
+    this.state.set('WARMUP');
+  }
+
   // Transição do Aquecimento para o primeiro Exercício
   public endWarmup(): void {
     this.state.set('EXERCISING');
@@ -109,6 +142,7 @@ export class WorkoutService {
 
     const exerciseDistribution: ExerciseType[] = [
       'MENTAL_MATH',
+      'PERCENTAGE',
       'WORD_PROBLEM',
       'NUMBER_SEQUENCE',
       'STROOP_TEST',
@@ -193,6 +227,11 @@ export class WorkoutService {
 
     this.sessionAttempts.push(attempt);
     await this.storage.saveAttempt(attempt);
+
+    // Atualiza Domínio de Matemática Mental se a questão for de um fato matemático
+    if (q.knowledgeId && q.mathDomain) {
+      await this.mentalMath.recordAttempt(q.knowledgeId, q.mathDomain, isCorrect, responseTimeMs);
+    }
 
     // Se errou e ainda estamos no treino regular, guarda para a revisão final
     if (!isCorrect && this.state() === 'EXERCISING') {
@@ -446,5 +485,6 @@ export class WorkoutService {
     this.sessionResult.set(null);
     this.sessionDiagnostics.set(null);
     this.timeoutModalData.set(null);
+    this.activeMathDomain.set(null);
   }
 }

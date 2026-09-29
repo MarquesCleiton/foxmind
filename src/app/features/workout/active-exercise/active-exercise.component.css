@@ -178,13 +178,19 @@
   line-height: 1.35;
 }
 
-/* 1. Cálculo Mental */
+/* 1. Cálculo Mental & Porcentagem */
 .math-card {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
   margin: 12px 0;
+  text-align: center;
+}
+
+.math-card.math-card-long {
+  flex-direction: column;
+  gap: 6px;
 }
 
 .equation {
@@ -193,6 +199,11 @@
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+}
+
+.math-card-long .equation {
+  font-size: 1.85rem;
+  line-height: 1.35;
 }
 
 .math-equals {
@@ -574,12 +585,288 @@
   color: var(--text-primary);
 }
 
-/* 9. Ordenação */
+/* ==================== MEMORIZAÇÃO: PRE-START & CONTAGEM 3s (Item 2) ==================== */
+.memory-pre-start-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  padding: 14px 14px;
+  gap: 10px;
+  width: 100%;
+  max-width: 390px;
+  margin: 6px auto;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
+}
+
+.memory-pre-start-card.card-reverse {
+  border-color: rgba(249, 115, 22, 0.45);
+  box-shadow: 0 10px 30px rgba(249, 115, 22, 0.12), 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.pre-start-header-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.badge-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+}
+
+.badge-reverse {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.badge-direct {
+  background: rgba(14, 165, 233, 0.18);
+  color: #38bdf8;
+  border: 1px solid rgba(14, 165, 233, 0.4);
+}
+
+.badge-genius {
+  background: rgba(168, 85, 247, 0.18);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.badge-spatial {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.pre-start-rule {
+  font-size: 0.92rem;
+  color: #f1f5f9;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.pre-start-rule strong {
+  color: #fbbf24;
+}
+
+/* Example Visual Box (Compacto) */
+.pre-start-example-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+}
+
+.example-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.example-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fox-primary);
+}
+
+.example-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+}
+
+.example-step {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+}
+
+.step-label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.highlight-label {
+  color: var(--fox-light);
+  font-weight: 700;
+}
+
+.demo-digits {
+  display: flex;
+  gap: 3px;
+}
+
+.demo-pill {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.demo-pill.active {
+  background: linear-gradient(135deg, var(--fox-primary), #ea580c);
+  border-color: var(--fox-primary);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
+}
+
+.example-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--fox-light);
+  white-space: nowrap;
+}
+
+/* Strategy Tip (Compacto) */
+.pre-start-strategy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(249, 115, 22, 0.08);
+  border-left: 3px solid var(--fox-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.strategy-fox-icon {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.pre-start-strategy strong {
+  color: var(--text-primary);
+}
+
+/* Start Button */
+.start-memory-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.02rem;
+  font-weight: 800;
+  margin-top: 2px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.35);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.start-memory-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.45);
+}
+
+.start-memory-btn:active {
+  transform: translateY(1px);
+}
+
+
+.memory-countdown-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 36px 20px;
+  width: 100%;
+  margin: 16px auto;
+}
+
+.countdown-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fox-primary);
+  background: var(--fox-surface);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  border-radius: var(--radius-full);
+  padding: 4px 14px;
+}
+
+.countdown-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(249, 115, 22, 0.05));
+  border: 3px solid var(--fox-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px var(--fox-glow);
+  animation: countdownPulse 1s infinite ease-in-out;
+}
+
+.countdown-number {
+  font-family: var(--font-mono);
+  font-size: 3rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.countdown-hint {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin: 0;
+}
+
+@keyframes countdownPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.08); opacity: 0.85; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 9. Ordenação (Item 3: Botões bloqueados que NÃO se reorganizam) */
 .ordering-view {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: 20px;
   width: 100%;
 }
 
@@ -607,34 +894,59 @@
   color: var(--color-att);
   border: 1px solid var(--color-att);
   font-family: var(--font-mono);
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  padding: 6px 16px;
+  padding: 6px 14px;
   border-radius: var(--radius-full);
 }
 
-.remaining-pills-row {
+.all-pills-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   justify-content: center;
+  width: 100%;
+  max-width: 360px;
 }
 
 .pick-pill-btn {
   background: var(--bg-surface);
-  border: 1.5px solid var(--border-subtle);
+  border: 2px solid var(--border-subtle);
   color: var(--text-primary);
   font-family: var(--font-mono);
-  font-size: 1.5rem;
-  font-weight: 700;
-  width: 60px;
-  height: 60px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-.pick-pill-btn:hover {
-  border-color: var(--border-focus);
+.pick-pill-btn:hover:not([disabled]) {
+  border-color: var(--fox-primary);
+  transform: scale(1.06);
+  box-shadow: 0 0 16px var(--fox-glow);
+}
+
+.pick-pill-btn.pill-locked {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.2);
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.pill-check {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #10b981;
 }

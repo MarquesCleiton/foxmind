@@ -1,7 +1,9 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StorageService } from '../../core/services/storage.service';
+import { MentalMathService } from '../../core/services/mental-math.service';
 import { DailyWorkoutSession, PersonalRecord } from '../../core/models/cognitive.models';
+import { DomainMasterySummary } from '../../core/models/mental-math.models';
 
 export interface EvaluatedSkill {
   key: string;
@@ -33,8 +35,10 @@ export interface CognitiveDiagnosis {
 })
 export class ProgressComponent implements OnInit {
   public storage = inject(StorageService);
+  private mentalMath = inject(MentalMathService);
   public recentSessions = signal<DailyWorkoutSession[]>([]);
   public personalRecords = signal<PersonalRecord[]>([]);
+  public domainSummaries = signal<DomainMasterySummary[]>([]);
 
   // Avaliação rica e estruturada de cada habilidade
   public evaluatedSkills = computed<EvaluatedSkill[]>(() => {
@@ -164,6 +168,8 @@ export class ProgressComponent implements OnInit {
     this.recentSessions.set(sessions);
     const records = await this.storage.getRecords();
     this.personalRecords.set(records);
+    const summaries = await this.mentalMath.getDomainSummaries();
+    this.domainSummaries.set(summaries);
   }
 
   public formatDuration(totalSeconds: number | undefined): string {

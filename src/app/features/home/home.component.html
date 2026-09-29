@@ -40,28 +40,66 @@
     </div>
   }
 
-  <!-- Saudação da Raposa Mentor -->
-  <section class="fox-greeting-card card animate-pop-in">
-    <div class="greeting-content">
-      <p class="greeting-title">Olá! Pronto para o treino de hoje?</p>
-      <p class="greeting-subtitle">
-        Uma sessão rápida de <strong>{{ currentMinutes() }} minutos</strong> mantém seus reflexos e memória em alta velocidade.
-      </p>
+  <!-- ==================== 1. RESUMO SUPERIOR DE PROGRESSO (Item 1) ==================== -->
+  <section class="stats-overview">
+    <div class="stat-mini-card card">
+      <span class="stat-mini-label">Nível</span>
+      <span class="stat-mini-val">Lvl {{ storage.profileSignal().level }}</span>
+    </div>
+    <div class="stat-mini-card card">
+      <span class="stat-mini-label">Total XP</span>
+      <span class="stat-mini-val text-amber">{{ storage.profileSignal().totalXp }} XP</span>
+    </div>
+    <div class="stat-mini-card card">
+      <span class="stat-mini-label">Sessões</span>
+      <span class="stat-mini-val">{{ storage.profileSignal().totalSessionsCompleted }}</span>
     </div>
   </section>
 
-  <!-- Card Principal: Seu Treino de Hoje (Alinhamento Perfeito) -->
+  <!-- ==================== 2. ESCOLHA DE TEMPO DO TREINO (Item 1) ==================== -->
+  <section class="quick-modes">
+    <div class="section-heading">
+      <span class="section-label">⏱ Duração do Treino:</span>
+    </div>
+    <div class="modes-grid">
+      <button 
+        class="mode-card card" 
+        [class.active]="currentMinutes() === 3"
+        (click)="selectDuration(3)">
+        <span class="mode-time">3 min</span>
+        <span class="mode-name">Expresso</span>
+      </button>
+
+      <button 
+        class="mode-card card" 
+        [class.active]="currentMinutes() === 8"
+        (click)="selectDuration(8)">
+        <span class="mode-time">8 min</span>
+        <span class="mode-name">Padrão</span>
+      </button>
+
+      <button 
+        class="mode-card card" 
+        [class.active]="currentMinutes() === 15"
+        (click)="selectDuration(15)">
+        <span class="mode-time">15 min</span>
+        <span class="mode-name">Intenso</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ==================== 3. CARD PRINCIPAL: SEU TREINO DE HOJE ==================== -->
   <section class="daily-workout-card card">
     <div class="workout-card-header-clean">
       <div class="card-eyebrow-row">
         <span class="card-eyebrow">RECOMENDADO DO DIA</span>
         <div class="duration-badge-pill">
           <span class="duration-icon">⏱</span>
-          <span class="duration-val">{{ currentMinutes() }}</span>
-          <span class="duration-unit">min</span>
+          <span class="duration-val">{{ currentMinutes() }} min</span>
         </div>
       </div>
       <h2 class="workout-title">Seu Treino de Hoje</h2>
+      <p class="workout-subtitle-clean">Sessão calibrada de {{ currentMinutes() }} min para acelerar foco e agilidade mental.</p>
     </div>
 
     <!-- Grade Elegante de Habilidades -->
@@ -108,51 +146,72 @@
     </button>
   </section>
 
-  <!-- Opções Rápidas de Duração -->
-  <section class="quick-modes">
-    <div class="section-heading">
-      <h3>Ou escolha seu tempo:</h3>
+  <!-- ==================== 4. MÓDULOS DE MATEMÁTICA MENTAL ==================== -->
+  <section class="math-modules-section">
+    <div class="math-section-header">
+      <div class="math-title-wrap">
+        <span class="math-section-icon">🧮</span>
+        <div>
+          <h3 class="math-section-title">Matemática Mental</h3>
+          <p class="math-section-desc">Automatize contas e estratégias com treino adaptativo focado.</p>
+        </div>
+      </div>
     </div>
-    <div class="modes-grid">
-      <button 
-        class="mode-card card" 
-        [class.active]="currentMinutes() === 3"
-        (click)="selectDuration(3)">
-        <span class="mode-time">3 min</span>
-        <span class="mode-name">Expresso</span>
+
+    <div class="math-modules-grid">
+      <!-- ➕ Adição -->
+      <button class="math-module-card card" (click)="startMathWorkout('ADDITION')">
+        <div class="module-icon-box add-gradient">➕</div>
+        <div class="module-info">
+          <span class="module-title">Adição</span>
+          <span class="module-meta">45 combinações</span>
+        </div>
       </button>
 
-      <button 
-        class="mode-card card" 
-        [class.active]="currentMinutes() === 8"
-        (click)="selectDuration(8)">
-        <span class="mode-time">8 min</span>
-        <span class="mode-name">Padrão</span>
+      <!-- ➖ Subtração -->
+      <button class="math-module-card card" (click)="startMathWorkout('SUBTRACTION')">
+        <div class="module-icon-box sub-gradient">➖</div>
+        <div class="module-info">
+          <span class="module-title">Subtração</span>
+          <span class="module-meta">Positivos e 10</span>
+        </div>
       </button>
 
-      <button 
-        class="mode-card card" 
-        [class.active]="currentMinutes() === 15"
-        (click)="selectDuration(15)">
-        <span class="mode-time">15 min</span>
-        <span class="mode-name">Intenso</span>
+      <!-- ✖️ Multiplicação -->
+      <button class="math-module-card card" (click)="startMathWorkout('MULTIPLICATION')">
+        <div class="module-icon-box mult-gradient">✖️</div>
+        <div class="module-info">
+          <span class="module-title">Multiplicação</span>
+          <span class="module-meta">Tabuadas de 2 a 9</span>
+        </div>
       </button>
-    </div>
-  </section>
 
-  <!-- Resumo de Estatísticas Pessoais -->
-  <section class="stats-overview">
-    <div class="stat-mini-card card">
-      <span class="stat-mini-label">Nível Cognitivo</span>
-      <span class="stat-mini-val">Lvl {{ storage.profileSignal().level }}</span>
-    </div>
-    <div class="stat-mini-card card">
-      <span class="stat-mini-label">Total de XP</span>
-      <span class="stat-mini-val text-amber">{{ storage.profileSignal().totalXp }} XP</span>
-    </div>
-    <div class="stat-mini-card card">
-      <span class="stat-mini-label">Sessões Concluídas</span>
-      <span class="stat-mini-val">{{ storage.profileSignal().totalSessionsCompleted }}</span>
+      <!-- ➗ Divisão -->
+      <button class="math-module-card card" (click)="startMathWorkout('DIVISION')">
+        <div class="module-icon-box div-gradient">➗</div>
+        <div class="module-info">
+          <span class="module-title">Divisão</span>
+          <span class="module-meta">Convenientes e restos</span>
+        </div>
+      </button>
+
+      <!-- % Porcentagem -->
+      <button class="math-module-card card" (click)="startMathWorkout('PERCENTAGE')">
+        <div class="module-icon-box pct-gradient">%</div>
+        <div class="module-info">
+          <span class="module-title">Porcentagem</span>
+          <span class="module-meta">Decomposição e reversa</span>
+        </div>
+      </button>
+
+      <!-- ⚡ Desafio Misto -->
+      <button class="math-module-card card card-mixed" (click)="startMathWorkout('MIXED')">
+        <div class="module-icon-box mixed-gradient">⚡</div>
+        <div class="module-info">
+          <span class="module-title">Desafio Misto</span>
+          <span class="module-meta">5 operações aleatórias</span>
+        </div>
+      </button>
     </div>
   </section>
 

@@ -118,6 +118,83 @@
     </div>
   </section>
 
+  <!-- ==================== DOMÍNIO EM MATEMÁTICA MENTAL (NeuroSprint) ==================== -->
+  <section class="math-mastery-panel card">
+    <div class="panel-header-with-badge">
+      <h2 class="section-title">Domínio em Matemática Mental</h2>
+      <span class="sub-badge">5 Operações</span>
+    </div>
+    <p class="section-desc">Acompanhe a automatização de contas fundamentais e o tempo de resposta em cada operação.</p>
+
+    <!-- Legenda de Domínio -->
+    <div class="mastery-legend-pills">
+      <span class="m-pill m-auto">🔵 Automatizado</span>
+      <span class="m-pill m-master">🟢 Dominado</span>
+      <span class="m-pill m-known">🟡 Conhecido</span>
+      <span class="m-pill m-learning">🟠 Em aprendizado</span>
+    </div>
+
+    <div class="math-domain-cards-list">
+      @for (dm of domainSummaries(); track dm.domain) {
+        <div class="math-domain-card">
+          <div class="domain-card-header">
+            <div class="domain-name-wrap">
+              <span class="domain-icon">{{ dm.icon }}</span>
+              <div>
+                <span class="domain-name">{{ dm.domainName }}</span>
+                <span class="domain-facts-count">{{ dm.totalFacts }} relações mapeadas</span>
+              </div>
+            </div>
+
+            <div class="domain-stats-pill">
+              @if (dm.averageTimeMs > 0) {
+                <span class="domain-avg-time">⚡ {{ (dm.averageTimeMs / 1000).toFixed(1) }}s</span>
+              }
+              <span class="domain-accuracy badge badge-att">{{ dm.accuracyPercentage }}% acerto</span>
+            </div>
+          </div>
+
+          <!-- Barra de Distribuição de Domínio Multi-segmento -->
+          <div class="mastery-segmented-bar">
+            <div 
+              class="seg seg-auto" 
+              [style.width.%]="dm.totalFacts > 0 ? (dm.automatedCount / dm.totalFacts) * 100 : 0" 
+              [title]="dm.automatedCount + ' automatizados'">
+            </div>
+            <div 
+              class="seg seg-master" 
+              [style.width.%]="dm.totalFacts > 0 ? (dm.masteredCount / dm.totalFacts) * 100 : 0" 
+              [title]="dm.masteredCount + ' dominados'">
+            </div>
+            <div 
+              class="seg seg-known" 
+              [style.width.%]="dm.totalFacts > 0 ? (dm.knownCount / dm.totalFacts) * 100 : 0" 
+              [title]="dm.knownCount + ' conhecidos'">
+            </div>
+            <div 
+              class="seg seg-learning" 
+              [style.width.%]="dm.totalFacts > 0 ? (dm.learningCount / dm.totalFacts) * 100 : 0" 
+              [title]="dm.learningCount + ' em aprendizado'">
+            </div>
+          </div>
+
+          <!-- Rodapé com contagens detalhadas -->
+          <div class="domain-counts-footer">
+            <span class="count-tag text-cyan">
+              <strong>{{ dm.automatedCount }}</strong> automatizados
+            </span>
+            <span class="count-tag text-emerald">
+              <strong>{{ dm.masteredCount }}</strong> dominados
+            </span>
+            <span class="count-tag text-amber">
+              <strong>{{ dm.learningCount + dm.knownCount }}</strong> em treino
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
   <!-- ==================== HISTÓRICO DE TREINOS ==================== -->
   <section class="sessions-history card">
     <h2 class="section-title">Últimos Treinos Concluídos</h2>

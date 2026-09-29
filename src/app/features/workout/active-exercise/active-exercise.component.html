@@ -18,7 +18,7 @@
   }
 
   <!-- ==================== AJUDA NATURAL DA RAPOSA (Item 3) ==================== -->
-  @if (question().hintStrategy && !isReviewMode()) {
+  @if (question().hintStrategy && !isReviewMode() && memoryStage() !== 'PRE_START') {
     <div class="natural-help-wrapper">
       @if (hintVisible()) {
         <div class="fox-hint-bubble animate-pop-in">
@@ -64,12 +64,14 @@
     <h2 class="prompt-title">{{ question().prompt }}</h2>
   </div>
 
-  <!-- 1. CÁLCULO MENTAL -->
-  @if (question().type === 'MENTAL_MATH') {
-    <div class="math-card">
+  <!-- 1. CÁLCULO MENTAL & PORCENTAGEM -->
+  @if (question().type === 'MENTAL_MATH' || question().type === 'PERCENTAGE') {
+    <div class="math-card" [class.math-card-long]="isLongEquation()">
       <div class="equation">{{ question().data.equation }}</div>
-      <div class="math-equals">=</div>
-      <div class="math-target">?</div>
+      @if (showsEqualsSign()) {
+        <div class="math-equals">=</div>
+        <div class="math-target">?</div>
+      }
     </div>
 
     <div class="options-grid">
@@ -149,103 +151,259 @@
 
   <!-- 5. SEQUÊNCIA NUMÉRICA -->
   @if (question().type === 'NUMBER_SEQUENCE') {
-    @if (memoryRevealed()) {
-      <div class="sequence-memorize animate-pop-in">
-        <div class="memorize-badge">Memorize agora!</div>
-        <div class="digits-row">
-          @for (d of question().data.sequence; track $index) {
-            <div class="digit-box">{{ d }}</div>
-          }
+    @if (memoryStage() === 'PRE_START') {
+      <div class="memory-pre-start-card card animate-pop-in" [class.card-reverse]="isReverseSequence()">
+        @if (isReverseSequence()) {
+          <div class="pre-start-header-compact">
+            <span class="badge-compact badge-reverse">🔄 Ordem Inversa</span>
+            <p class="pre-start-rule">
+              Digite do <strong>ÚLTIMO para o PRIMEIRO</strong> número!
+            </p>
+          </div>
+
+          <!-- Exemplo de Resposta -->
+          <div class="pre-start-example-box">
+            <div class="example-header">
+              <span class="example-label">Exemplo de Resposta:</span>
+            </div>
+            <div class="example-flow">
+              <div class="example-step">
+                <span class="step-label">Você vê:</span>
+                <div class="demo-digits">
+                  <span class="demo-pill">4</span>
+                  <span class="demo-pill">8</span>
+                  <span class="demo-pill">2</span>
+                </div>
+              </div>
+              <div class="example-arrow">
+                <span>🔄 Inverter</span>
+              </div>
+              <div class="example-step">
+                <span class="step-label highlight-label">Você digita:</span>
+                <div class="demo-digits demo-highlight">
+                  <span class="demo-pill active">2</span>
+                  <span class="demo-pill active">8</span>
+                  <span class="demo-pill active">4</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dica da Raposa -->
+          <div class="pre-start-strategy">
+            <span class="strategy-fox-icon">🦊</span>
+            <span><strong>Dica da Raposa:</strong> Guarde o último número primeiro, pois ele será sua primeira tecla a ser digitada!</span>
+          </div>
+        } @else {
+          <div class="pre-start-header-compact">
+            <span class="badge-compact badge-direct">➔ Ordem Direta</span>
+            <p class="pre-start-rule">
+              Digite exatamente na <strong>mesma ordem</strong> (do primeiro ao último).
+            </p>
+          </div>
+
+          <!-- Exemplo de Resposta -->
+          <div class="pre-start-example-box">
+            <div class="example-header">
+              <span class="example-label">Exemplo de Resposta:</span>
+            </div>
+            <div class="example-flow">
+              <div class="example-step">
+                <span class="step-label">Você vê:</span>
+                <div class="demo-digits">
+                  <span class="demo-pill">3</span>
+                  <span class="demo-pill">7</span>
+                  <span class="demo-pill">5</span>
+                </div>
+              </div>
+              <div class="example-arrow">
+                <span>➔ Mesma ordem</span>
+              </div>
+              <div class="example-step">
+                <span class="step-label highlight-label">Você digita:</span>
+                <div class="demo-digits demo-highlight">
+                  <span class="demo-pill active">3</span>
+                  <span class="demo-pill active">7</span>
+                  <span class="demo-pill active">5</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dica da Raposa -->
+          <div class="pre-start-strategy">
+            <span class="strategy-fox-icon">🦊</span>
+            <span><strong>Dica da Raposa:</strong> Repita os dígitos criando um ritmo sonoro na mente (ex: pares ou trios).</span>
+          </div>
+        }
+
+        <button class="btn-primary start-memory-btn" (click)="startMemoryCountdown()">
+          ▶ Começar Memorização (3s)
+        </button>
+      </div>
+    } @else if (memoryStage() === 'COUNTDOWN') {
+      <div class="memory-countdown-overlay animate-pop-in">
+        <span class="countdown-badge">Prepare-se</span>
+        <div class="countdown-circle">
+          <span class="countdown-number">{{ countdownNumber() }}</span>
         </div>
+        <p class="countdown-hint">Foco na tela...</p>
       </div>
     } @else {
-      <div class="sequence-input-view animate-fade-in">
-        <div class="entered-display">
-          <span class="entered-text">{{ userSequenceInput() || '—' }}</span>
+      @if (memoryRevealed()) {
+        <div class="sequence-memorize animate-pop-in">
+          <div class="memorize-badge">Memorize agora!</div>
+          <div class="digits-row">
+            @for (d of question().data.sequence; track $index) {
+              <div class="digit-box">{{ d }}</div>
+            }
+          </div>
         </div>
+      } @else {
+        <div class="sequence-input-view animate-fade-in">
+          <div class="entered-display">
+            <span class="entered-text">{{ userSequenceInput() || '—' }}</span>
+          </div>
 
-        <div class="keypad-grid">
-          @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track n) {
-            <button class="key-btn" (click)="appendDigit(n)">{{ n }}</button>
-          }
-          <button class="key-btn key-action" (click)="backspaceDigit()">⌫</button>
-          <button class="key-btn" (click)="appendDigit(0)">0</button>
-          <button class="key-btn key-confirm" (click)="submitSequence()">✓</button>
+          <div class="keypad-grid">
+            @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track n) {
+              <button class="key-btn" (click)="appendDigit(n)">{{ n }}</button>
+            }
+            <button class="key-btn key-action" (click)="backspaceDigit()">⌫</button>
+            <button class="key-btn" (click)="appendDigit(0)">0</button>
+            <button class="key-btn key-confirm" (click)="submitSequence()">✓</button>
+          </div>
         </div>
-      </div>
+      }
     }
   }
 
   <!-- 6. GENIUS / CORES SEQUENCIAIS -->
   @if (question().type === 'GENIUS_COLORS') {
-    <div class="genius-view">
-      <div class="genius-grid">
-        <button 
-          class="genius-pad pad-cyan" 
-          [class.active]="activeGeniusColor() === 'CYAN'"
-          [disabled]="!geniusCanInput()"
-          (click)="onGeniusTap('CYAN')">
-        </button>
-        <button 
-          class="genius-pad pad-violet" 
-          [class.active]="activeGeniusColor() === 'VIOLET'"
-          [disabled]="!geniusCanInput()"
-          (click)="onGeniusTap('VIOLET')">
-        </button>
-        <button 
-          class="genius-pad pad-emerald" 
-          [class.active]="activeGeniusColor() === 'EMERALD'"
-          [disabled]="!geniusCanInput()"
-          (click)="onGeniusTap('EMERALD')">
-        </button>
-        <button 
-          class="genius-pad pad-amber" 
-          [class.active]="activeGeniusColor() === 'AMBER'"
-          [disabled]="!geniusCanInput()"
-          (click)="onGeniusTap('AMBER')">
+    @if (memoryStage() === 'PRE_START') {
+      <div class="memory-pre-start-card card animate-pop-in">
+        <div class="pre-start-header-compact">
+          <span class="badge-compact badge-genius">🎨 Sequência de Cores</span>
+          <p class="pre-start-rule">
+            Observe as cores piscarem e repita exatamente na <strong>mesma ordem</strong>!
+          </p>
+        </div>
+
+        <div class="pre-start-strategy">
+          <span class="strategy-fox-icon">🦊</span>
+          <span><strong>Dica da Raposa:</strong> Fale os nomes das cores na mente ("azul, roxo..."). Você terá 1 chance de rever!</span>
+        </div>
+
+        <button class="btn-primary start-memory-btn" (click)="startMemoryCountdown()">
+          ▶ Começar Memorização (3s)
         </button>
       </div>
-      <p class="genius-hint">
-        {{ geniusCanInput() ? 'Sua vez! Repita a sequência tocando nas cores.' : 'Aguarde a demonstração...' }}
-      </p>
-
-      <!-- Opção de Rever a Sequência (Item 2 - Apenas 1x) -->
-      @if (geniusCanInput()) {
-        <div class="genius-controls">
-          @if (geniusReplayRemaining() > 0) {
-            <button class="btn-replay-genius animate-fade-in" (click)="replayGeniusSequence()">
-              <span>👁</span> Rever Sequência (1x restante)
-            </button>
-          } @else {
-            <span class="replay-exhausted-badge">✓ Replay já utilizado</span>
-          }
+    } @else if (memoryStage() === 'COUNTDOWN') {
+      <div class="memory-countdown-overlay animate-pop-in">
+        <span class="countdown-badge">Prepare-se</span>
+        <div class="countdown-circle">
+          <span class="countdown-number">{{ countdownNumber() }}</span>
         </div>
-      }
-    </div>
+        <p class="countdown-hint">Foco nas cores...</p>
+      </div>
+    } @else {
+      <div class="genius-view">
+        <div class="genius-grid">
+          <button 
+            class="genius-pad pad-cyan" 
+            [class.active]="activeGeniusColor() === 'CYAN'"
+            [disabled]="!geniusCanInput()"
+            (click)="onGeniusTap('CYAN')">
+          </button>
+          <button 
+            class="genius-pad pad-violet" 
+            [class.active]="activeGeniusColor() === 'VIOLET'"
+            [disabled]="!geniusCanInput()"
+            (click)="onGeniusTap('VIOLET')">
+          </button>
+          <button 
+            class="genius-pad pad-emerald" 
+            [class.active]="activeGeniusColor() === 'EMERALD'"
+            [disabled]="!geniusCanInput()"
+            (click)="onGeniusTap('EMERALD')">
+          </button>
+          <button 
+            class="genius-pad pad-amber" 
+            [class.active]="activeGeniusColor() === 'AMBER'"
+            [disabled]="!geniusCanInput()"
+            (click)="onGeniusTap('AMBER')">
+          </button>
+        </div>
+        <p class="genius-hint">
+          {{ geniusCanInput() ? 'Sua vez! Repita a sequência tocando nas cores.' : 'Aguarde a demonstração...' }}
+        </p>
+
+        <!-- Opção de Rever a Sequência (Item 2 - Apenas 1x) -->
+        @if (geniusCanInput()) {
+          <div class="genius-controls">
+            @if (geniusReplayRemaining() > 0) {
+              <button class="btn-replay-genius animate-fade-in" (click)="replayGeniusSequence()">
+                <span>👁</span> Rever Sequência (1x restante)
+              </button>
+            } @else {
+              <span class="replay-exhausted-badge">✓ Replay já utilizado</span>
+            }
+          </div>
+        }
+      </div>
+    }
   }
 
   <!-- 7. MEMÓRIA ESPACIAL (GRADE) -->
   @if (question().type === 'SPATIAL_GRID') {
-    <div class="spatial-view">
-      <div 
-        class="spatial-grid" 
-        [style.grid-template-columns]="'repeat(' + question().data.gridSize + ', 1fr)'">
-        @for (cell of [].constructor(question().data.gridSize * question().data.gridSize); track $index) {
-          <button 
-            class="grid-cell"
-            [class.revealed]="memoryRevealed() && question().data.targets.includes($index)"
-            [class.selected]="!memoryRevealed() && selectedGridCells().includes($index)"
-            (click)="toggleGridCell($index)">
+    @if (memoryStage() === 'PRE_START') {
+      <div class="memory-pre-start-card card animate-pop-in">
+        <div class="pre-start-header-compact">
+          <span class="badge-compact badge-spatial">📐 Memória de Posições</span>
+          <p class="pre-start-rule">
+            Memorize as <strong>{{ spatialTargetsCount() }} células iluminadas</strong> e marque-as quando apagarem.
+          </p>
+        </div>
+
+        <div class="pre-start-strategy">
+          <span class="strategy-fox-icon">🦊</span>
+          <span><strong>Dica da Raposa:</strong> Conecte mentalmente os pontos formando desenhos ou padrões visuais.</span>
+        </div>
+
+        <button class="btn-primary start-memory-btn" (click)="startMemoryCountdown()">
+          ▶ Começar Memorização (3s)
+        </button>
+      </div>
+    } @else if (memoryStage() === 'COUNTDOWN') {
+      <div class="memory-countdown-overlay animate-pop-in">
+        <span class="countdown-badge">Prepare-se</span>
+        <div class="countdown-circle">
+          <span class="countdown-number">{{ countdownNumber() }}</span>
+        </div>
+        <p class="countdown-hint">Foco na grade...</p>
+      </div>
+    } @else {
+      <div class="spatial-view">
+        <div 
+          class="spatial-grid" 
+          [style.grid-template-columns]="'repeat(' + question().data.gridSize + ', 1fr)'">
+          @for (cell of [].constructor(question().data.gridSize * question().data.gridSize); track $index) {
+            <button 
+              class="grid-cell"
+              [class.revealed]="memoryRevealed() && question().data.targets.includes($index)"
+              [class.selected]="!memoryRevealed() && selectedGridCells().includes($index)"
+              (click)="toggleGridCell($index)">
+            </button>
+          }
+        </div>
+
+        @if (!memoryRevealed()) {
+          <button class="btn-primary confirm-spatial-btn" (click)="submitSpatial()">
+            Confirmar Posições ({{ selectedGridCells().length }})
           </button>
         }
       </div>
-
-      @if (!memoryRevealed()) {
-        <button class="btn-primary confirm-spatial-btn" (click)="submitSpatial()">
-          Confirmar Posições ({{ selectedGridCells().length }})
-        </button>
-      }
-    </div>
+    }
   }
 
   <!-- 8. ATENÇÃO & REAÇÃO -->
@@ -267,7 +425,7 @@
     </div>
   }
 
-  <!-- 9. ORDENAÇÃO NUMÉRICA -->
+  <!-- 9. ORDENAÇÃO NUMÉRICA (Item 3: Botões bloqueiam em vez de sumir) -->
   @if (question().type === 'NUMBER_ORDERING') {
     <div class="ordering-view">
       <div class="ordered-slot-row">
@@ -279,10 +437,17 @@
         }
       </div>
 
-      <div class="remaining-pills-row">
-        @for (num of remainingOrderingNumbers(); track num) {
-          <button class="pick-pill-btn animate-fade-in" (click)="pickOrderingNumber(num)">
-            {{ num }}
+      <div class="all-pills-grid">
+        @for (num of allOrderingNumbers(); track $index) {
+          <button 
+            class="pick-pill-btn" 
+            [class.pill-locked]="isNumberOrdered(num)"
+            [disabled]="isNumberOrdered(num)"
+            (click)="pickOrderingNumber(num)">
+            <span class="pill-val">{{ num }}</span>
+            @if (isNumberOrdered(num)) {
+              <span class="pill-check">✓</span>
+            }
           </button>
         }
       </div>
