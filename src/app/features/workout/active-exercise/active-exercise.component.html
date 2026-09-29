@@ -1,0 +1,271 @@
+<div class="exercise-container animate-fade-in">
+
+  <!-- ==================== BARRA DE TEMPO (Item 2) ==================== -->
+  @if (hasTimer()) {
+    <div class="timer-bar-wrapper">
+      <div class="timer-track">
+        <div 
+          class="timer-fill" 
+          [style.width.%]="timePercent()"
+          [class.timer-warning]="timePercent() <= 35"
+          [class.timer-danger]="timePercent() <= 15">
+        </div>
+      </div>
+      <div class="timer-badge" [class.badge-danger]="timePercent() <= 15">
+        ⏱ {{ timeRemaining() }}s
+      </div>
+    </div>
+  }
+
+  <!-- ==================== AJUDA NATURAL DA RAPOSA (Item 3) ==================== -->
+  @if (question().hintStrategy && !isReviewMode()) {
+    <div class="natural-help-wrapper">
+      @if (hintVisible()) {
+        <div class="fox-hint-bubble animate-pop-in">
+          <div class="fox-hint-icon">🦊</div>
+          <div class="fox-hint-body">
+            <strong>Dica da Raposa:</strong>
+            <p>{{ question().hintStrategy }}</p>
+            @if (disabledOptions().length > 0) {
+              <span class="hint-relief">Eliminamos 2 alternativas para facilitar seu raciocínio.</span>
+            }
+          </div>
+          <button class="hint-close-btn" (click)="toggleFoxHint()">✕</button>
+        </div>
+      } @else {
+        <button class="fox-hint-trigger-btn animate-fade-in" (click)="toggleFoxHint()">
+          <span>🦊</span> Precisa de uma dica?
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Dica Estratégica em Modo de Revisão -->
+  @if (isReviewMode() && question().explanationStrategy) {
+    <div class="strategy-banner animate-pop-in">
+      <div class="strategy-fox">🦊</div>
+      <div class="strategy-text">
+        <strong>Estratégia Recomendada:</strong>
+        <p>{{ question().explanationStrategy }}</p>
+      </div>
+    </div>
+  }
+
+  <!-- Pergunta / Comando Principal -->
+  <div class="prompt-header">
+    <h2 class="prompt-title">{{ question().prompt }}</h2>
+  </div>
+
+  <!-- 1. CÁLCULO MENTAL -->
+  @if (question().type === 'MENTAL_MATH') {
+    <div class="math-card">
+      <div class="equation">{{ question().data.equation }}</div>
+      <div class="math-equals">=</div>
+      <div class="math-target">?</div>
+    </div>
+
+    <div class="options-grid">
+      @for (opt of question().options; track opt) {
+        <button 
+          class="option-btn" 
+          [class.option-dimmed]="isOptionDisabled(opt)"
+          [disabled]="isOptionDisabled(opt)"
+          (click)="selectOption(opt)">
+          <span class="option-value">{{ opt }}</span>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- 2. PROBLEMAS CONTEXTUAIS (Distância, Velocidade, Tempo, Regra de Três, Estimativa) -->
+  @if (question().type === 'WORD_PROBLEM') {
+    <div class="word-problem-card card animate-pop-in">
+      <p class="word-problem-text">{{ question().data.text }}</p>
+    </div>
+
+    <div class="options-grid">
+      @for (opt of question().options; track opt) {
+        <button 
+          class="option-btn" 
+          [class.option-dimmed]="isOptionDisabled(opt)"
+          [disabled]="isOptionDisabled(opt)"
+          (click)="selectOption(opt)">
+          <span class="option-value">{{ opt }} <small class="opt-unit">{{ question().data.unit || '' }}</small></span>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- 3. TESTE DE STROOP (Controle Inibitório) -->
+  @if (question().type === 'STROOP_TEST') {
+    <div class="stroop-card card animate-pop-in">
+      <span 
+        class="stroop-word" 
+        [style.color]="question().data.inkColor">
+        {{ question().data.wordText }}
+      </span>
+    </div>
+
+    <div class="stroop-options-grid">
+      @for (item of question().options; track item.id) {
+        <button 
+          class="stroop-btn" 
+          [class.option-dimmed]="isOptionDisabled(item.id)"
+          [disabled]="isOptionDisabled(item.id)"
+          (click)="selectOption(item.id)">
+          <span class="color-dot" [style.background-color]="item.color"></span>
+          <span class="item-name">{{ item.name }}</span>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- 4. PADRÕES LÓGICOS E SEQUÊNCIAS MATEMÁTICAS -->
+  @if (question().type === 'LOGICAL_PATTERN') {
+    <div class="pattern-card card animate-pop-in">
+      <div class="pattern-display">{{ question().data.sequenceText }}</div>
+    </div>
+
+    <div class="options-grid">
+      @for (opt of question().options; track opt) {
+        <button 
+          class="option-btn" 
+          [class.option-dimmed]="isOptionDisabled(opt)"
+          [disabled]="isOptionDisabled(opt)"
+          (click)="selectOption(opt)">
+          <span class="option-value">{{ opt }}</span>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- 5. SEQUÊNCIA NUMÉRICA -->
+  @if (question().type === 'NUMBER_SEQUENCE') {
+    @if (memoryRevealed()) {
+      <div class="sequence-memorize animate-pop-in">
+        <div class="memorize-badge">Memorize agora!</div>
+        <div class="digits-row">
+          @for (d of question().data.sequence; track $index) {
+            <div class="digit-box">{{ d }}</div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="sequence-input-view animate-fade-in">
+        <div class="entered-display">
+          <span class="entered-text">{{ userSequenceInput() || '—' }}</span>
+        </div>
+
+        <div class="keypad-grid">
+          @for (n of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track n) {
+            <button class="key-btn" (click)="appendDigit(n)">{{ n }}</button>
+          }
+          <button class="key-btn key-action" (click)="backspaceDigit()">⌫</button>
+          <button class="key-btn" (click)="appendDigit(0)">0</button>
+          <button class="key-btn key-confirm" (click)="submitSequence()">✓</button>
+        </div>
+      </div>
+    }
+  }
+
+  <!-- 6. GENIUS / CORES SEQUENCIAIS -->
+  @if (question().type === 'GENIUS_COLORS') {
+    <div class="genius-view">
+      <div class="genius-grid">
+        <button 
+          class="genius-pad pad-cyan" 
+          [class.active]="activeGeniusColor() === 'CYAN'"
+          [disabled]="!geniusCanInput()"
+          (click)="onGeniusTap('CYAN')">
+        </button>
+        <button 
+          class="genius-pad pad-violet" 
+          [class.active]="activeGeniusColor() === 'VIOLET'"
+          [disabled]="!geniusCanInput()"
+          (click)="onGeniusTap('VIOLET')">
+        </button>
+        <button 
+          class="genius-pad pad-emerald" 
+          [class.active]="activeGeniusColor() === 'EMERALD'"
+          [disabled]="!geniusCanInput()"
+          (click)="onGeniusTap('EMERALD')">
+        </button>
+        <button 
+          class="genius-pad pad-amber" 
+          [class.active]="activeGeniusColor() === 'AMBER'"
+          [disabled]="!geniusCanInput()"
+          (click)="onGeniusTap('AMBER')">
+        </button>
+      </div>
+      <p class="genius-hint">
+        {{ geniusCanInput() ? 'Sua vez! Repita a sequência tocando nas cores.' : 'Aguarde a demonstração...' }}
+      </p>
+    </div>
+  }
+
+  <!-- 7. MEMÓRIA ESPACIAL (GRADE) -->
+  @if (question().type === 'SPATIAL_GRID') {
+    <div class="spatial-view">
+      <div 
+        class="spatial-grid" 
+        [style.grid-template-columns]="'repeat(' + question().data.gridSize + ', 1fr)'">
+        @for (cell of [].constructor(question().data.gridSize * question().data.gridSize); track $index) {
+          <button 
+            class="grid-cell"
+            [class.revealed]="memoryRevealed() && question().data.targets.includes($index)"
+            [class.selected]="!memoryRevealed() && selectedGridCells().includes($index)"
+            (click)="toggleGridCell($index)">
+          </button>
+        }
+      </div>
+
+      @if (!memoryRevealed()) {
+        <button class="btn-primary confirm-spatial-btn" (click)="submitSpatial()">
+          Confirmar Posições ({{ selectedGridCells().length }})
+        </button>
+      }
+    </div>
+  }
+
+  <!-- 8. ATENÇÃO & REAÇÃO -->
+  @if (question().type === 'ATTENTION_TARGET') {
+    <div class="attention-view">
+      <div class="attention-options">
+        @for (item of question().options; track item.id) {
+          <button 
+            class="att-btn" 
+            [style.border-color]="item.color"
+            [class.option-dimmed]="isOptionDisabled(item.id)"
+            [disabled]="isOptionDisabled(item.id)"
+            (click)="selectOption(item.id)">
+            <span class="color-dot" [style.background-color]="item.color"></span>
+            <span class="item-name">{{ item.name }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- 9. ORDENAÇÃO NUMÉRICA -->
+  @if (question().type === 'NUMBER_ORDERING') {
+    <div class="ordering-view">
+      <div class="ordered-slot-row">
+        @for (num of orderedSelected(); track $index) {
+          <div class="ordered-pill animate-pop-in">{{ num }}</div>
+        }
+        @if (orderedSelected().length === 0) {
+          <span class="ordering-placeholder">Toque nos números abaixo em ordem crescente...</span>
+        }
+      </div>
+
+      <div class="remaining-pills-row">
+        @for (num of remainingOrderingNumbers(); track num) {
+          <button class="pick-pill-btn animate-fade-in" (click)="pickOrderingNumber(num)">
+            {{ num }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+</div>

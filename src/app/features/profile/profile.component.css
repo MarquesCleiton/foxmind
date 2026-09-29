@@ -1,0 +1,239 @@
+.profile-container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px 16px 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Card do Perfil */
+.profile-card {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 6px 18px var(--fox-glow);
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.user-xp {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--fox-primary);
+  font-weight: 600;
+}
+
+/* Barra de Nível */
+.level-progress-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.level-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.level-track {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.level-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--fox-primary), var(--fox-light));
+  border-radius: var(--radius-full);
+  transition: width 400ms ease;
+}
+
+/* Grupos de Configurações */
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.settings-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
+
+.setting-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.setting-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.setting-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Toggle Switches */
+.switch-btn {
+  width: 50px;
+  height: 28px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  position: relative;
+  transition: background-color var(--transition-fast);
+}
+
+.switch-btn.on {
+  background: var(--fox-primary);
+  border-color: var(--fox-primary);
+}
+
+.switch-handle {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+}
+
+.switch-btn.on .switch-handle {
+  transform: translateX(22px);
+}
+
+/* Pílulas de Seleção de Duração */
+.duration-toggles {
+  display: flex;
+  gap: 6px;
+}
+
+.pill-toggle {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+}
+
+.pill-toggle.active {
+  background: var(--fox-primary);
+  color: #fff;
+  border-color: var(--fox-primary);
+}
+
+.theme-toggle-btn {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+
+/* Privacidade & Backup */
+.privacy-note {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.privacy-note strong {
+  color: var(--fox-light);
+}
+
+.data-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.data-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 0.9rem;
+}
+
+.file-label {
+  cursor: pointer;
+  text-align: center;
+}
+
+.danger-btn {
+  color: var(--error);
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+.danger-btn:hover {
+  background-color: rgba(244, 63, 94, 0.1);
+}
+
+/* Footer */
+.app-info-footer {
+  text-align: center;
+  padding: 12px 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.footer-tip {
+  margin-top: 4px;
+  font-size: 0.75rem;
+}

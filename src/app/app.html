@@ -1,0 +1,10 @@
+<div class="app-shell" [class.theme-light]="storage.profileSignal().theme === 'light'">
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Navbar exibida apenas fora do fluxo imersivo de treino -->
+  @if (!isWorkoutScreen()) {
+    <app-navbar></app-navbar>
+  }
+</div>

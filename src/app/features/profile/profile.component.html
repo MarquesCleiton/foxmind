@@ -1,0 +1,122 @@
+<div class="profile-container animate-fade-in">
+
+  <!-- Cabeçalho de Perfil com Mascote -->
+  <section class="profile-card card">
+    <div class="profile-header-row">
+      <div class="profile-avatar">
+        <img src="fox-mascot.png" alt="FoxMind" class="avatar-img" />
+      </div>
+      <div class="profile-info">
+        <span class="user-level-badge badge badge-fox">Nível {{ storage.profileSignal().level }}</span>
+        <h1 class="user-title">Raposa Astuta</h1>
+        <p class="user-xp">{{ storage.profileSignal().totalXp }} XP acumulados</p>
+      </div>
+    </div>
+
+    <!-- Barra de Progresso de Nível -->
+    <div class="level-progress-box">
+      <div class="level-labels">
+        <span>Próximo Nível</span>
+        <span>{{ storage.profileSignal().totalXp % 200 }} / 200 XP</span>
+      </div>
+      <div class="level-track">
+        <div 
+          class="level-bar" 
+          [style.width.%]="((storage.profileSignal().totalXp % 200) / 200) * 100">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Preferências de Treino -->
+  <section class="settings-group card">
+    <h2 class="settings-title">Preferências de Treino</h2>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <span class="setting-name">Meta Diária Padrão</span>
+        <span class="setting-desc">Duração alvo dos treinos diários</span>
+      </div>
+      <div class="duration-toggles">
+        <button 
+          class="pill-toggle" 
+          [class.active]="storage.profileSignal().targetMinutes === 3"
+          (click)="setTargetMinutes(3)">3 min</button>
+        <button 
+          class="pill-toggle" 
+          [class.active]="storage.profileSignal().targetMinutes === 8"
+          (click)="setTargetMinutes(8)">8 min</button>
+        <button 
+          class="pill-toggle" 
+          [class.active]="storage.profileSignal().targetMinutes === 15"
+          (click)="setTargetMinutes(15)">15 min</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <span class="setting-name">Efeitos Sonoros</span>
+        <span class="setting-desc">Sons sintéticos suaves para acerto e erro</span>
+      </div>
+      <button 
+        class="switch-btn" 
+        [class.on]="storage.profileSignal().soundEnabled"
+        (click)="toggleSound()">
+        <span class="switch-handle"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <span class="setting-name">Vibração Tátil (Haptic)</span>
+        <span class="setting-desc">Pequenos pulsos táteis nos exercícios</span>
+      </div>
+      <button 
+        class="switch-btn" 
+        [class.on]="storage.profileSignal().hapticEnabled"
+        (click)="toggleHaptic()">
+        <span class="switch-handle"></span>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-text">
+        <span class="setting-name">Aparência</span>
+        <span class="setting-desc">Alternar entre modo escuro (Dark Obsidian) e claro</span>
+      </div>
+      <button class="btn-secondary theme-toggle-btn" (click)="toggleTheme()">
+        {{ storage.profileSignal().theme === 'dark' ? '🌙 Escuro' : '☀️ Claro' }}
+      </button>
+    </div>
+  </section>
+
+  <!-- Dados & Privacidade 100% Local -->
+  <section class="settings-group card">
+    <h2 class="settings-title">Dados & Privacidade</h2>
+    <p class="privacy-note">
+      Todos os seus dados são salvos <strong>100% no seu dispositivo (IndexedDB)</strong>. Nenhuma informação pessoal ou pontuação é transmitida para servidores externos.
+    </p>
+
+    <div class="data-actions">
+      <button class="btn-secondary data-btn" (click)="exportBackup()">
+        📥 Exportar Backup (JSON)
+      </button>
+
+      <label class="btn-secondary data-btn file-label">
+        📤 Importar Backup
+        <input type="file" accept=".json" (change)="onFileSelected($event)" style="display: none;" />
+      </label>
+
+      <button class="btn-secondary data-btn danger-btn" (click)="resetData()">
+        ⚠️ Redefinir Todo o Progresso
+      </button>
+    </div>
+  </section>
+
+  <!-- Informações do PWA -->
+  <footer class="app-info-footer">
+    <p><strong>FoxMind v1.0</strong> • PWA Offline First</p>
+    <p class="footer-tip">Dica: Adicione este app à sua Tela de Início para acesso offline diário.</p>
+  </footer>
+
+</div>

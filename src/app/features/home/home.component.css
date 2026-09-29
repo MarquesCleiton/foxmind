@@ -1,0 +1,357 @@
+.home-container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px 16px 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header Superior */
+.home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 4px 14px var(--fox-glow);
+}
+
+.brand-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brand-name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.brand-tagline {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.streak-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+}
+
+.streak-flame {
+  font-size: 1.1rem;
+}
+
+.streak-number {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--fox-primary);
+}
+
+.streak-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Card da Raposa Mentor */
+.fox-greeting-card {
+  background: linear-gradient(135deg, rgba(20, 28, 46, 0.9), rgba(26, 37, 60, 0.9));
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  padding: 16px 18px;
+}
+
+.greeting-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.greeting-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.greeting-subtitle strong {
+  color: var(--fox-light);
+}
+
+/* Card Principal de Treino */
+.daily-workout-card {
+  background: var(--bg-surface);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.workout-card-header-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.card-eyebrow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.card-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--fox-primary);
+  background: var(--fox-surface);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.duration-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--fox-surface);
+  border: 1.5px solid rgba(249, 115, 22, 0.35);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+
+.duration-icon {
+  font-size: 0.9rem;
+}
+
+.duration-val {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--fox-primary);
+  line-height: 1;
+}
+
+.duration-unit {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--fox-primary);
+}
+
+.workout-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+/* Grade de Habilidades Limpa (2x2) - Alinhamento Perfeito com o Botão */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.skill-tile {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
+
+.skill-tile:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.tile-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.icon-calc { background: var(--color-calc-subtle); }
+.icon-mem { background: var(--color-mem-subtle); }
+.icon-att { background: var(--color-att-subtle); }
+.icon-spd { background: var(--color-spd-subtle); }
+
+.tile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.tile-name {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile-time {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.start-workout-btn {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  font-size: 1.1rem;
+}
+
+/* Modos Rápidos */
+.quick-modes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-heading h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.modes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mode-card {
+  padding: 14px 8px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.mode-card:hover {
+  border-color: var(--border-focus);
+}
+
+.mode-card.active {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: var(--fox-primary);
+  box-shadow: 0 0 16px var(--fox-glow);
+}
+
+.mode-time {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mode-card.active .mode-time {
+  color: var(--fox-primary);
+}
+
+.mode-name {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.mode-card.active .mode-name {
+  color: var(--fox-light);
+  font-weight: 600;
+}
+
+/* Estatísticas Rápidas */
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.stat-mini-card {
+  padding: 14px 8px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-mini-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.stat-mini-val {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.text-amber {
+  color: var(--fox-primary);
+}

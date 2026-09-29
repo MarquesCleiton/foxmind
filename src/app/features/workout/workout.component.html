@@ -1,0 +1,113 @@
+<div class="workout-screen">
+
+  <!-- ==================== ESTADO 1: AQUECIMENTO ==================== -->
+  @if (workout.state() === 'WARMUP') {
+    <div class="warmup-container animate-fade-in">
+      <div class="fox-avatar-large">
+        <img src="fox-mascot.png" alt="FoxMind" class="fox-img animate-pop-in" />
+      </div>
+      <h1 class="warmup-title">Foco & Presença</h1>
+      <p class="warmup-subtitle">Respire fundo por um instante. O motor adaptativo preparou uma sessão focada para você hoje.</p>
+
+      <div class="warmup-info-pills">
+        <span class="badge badge-fox">⏱ {{ workout.selectedMinutes() }} minutos</span>
+        <span class="badge badge-calc">🧠 4 Habilidades</span>
+        <span class="badge badge-att">⚡ Dificuldade Adaptativa</span>
+      </div>
+
+      <button class="btn-primary start-now-btn" (click)="onWarmupComplete()">
+        Estou Pronto
+      </button>
+    </div>
+  }
+
+  <!-- ==================== ESTADO 2 & 3: EXERCÍCIOS & REVISÃO ==================== -->
+  @if (workout.state() === 'EXERCISING' || workout.state() === 'ERROR_REVIEW') {
+    <!-- Barra Superior de Controle Zen -->
+    <header class="workout-header">
+      <button class="exit-btn" (click)="exitWorkout()" title="Pausar / Sair">✕</button>
+
+      <div class="progress-bar-container">
+        <div 
+          class="progress-fill" 
+          [style.width.%]="workout.sessionProgressPercent()"
+          [class.review-fill]="workout.state() === 'ERROR_REVIEW'">
+        </div>
+      </div>
+
+      <div class="step-indicator">
+        @if (workout.state() === 'EXERCISING') {
+          <span class="step-text">{{ workout.currentQuestionIndex() + 1 }} / {{ workout.totalQuestionsCount() }}</span>
+        } @else {
+          <span class="review-tag">Revisão</span>
+        }
+      </div>
+    </header>
+
+    <!-- Feedback Imediato Flutuante (sem interromper) -->
+    @if (workout.feedback(); as fb) {
+      <div 
+        class="feedback-pill animate-pop-in"
+        [class.fb-correct]="fb.isCorrect"
+        [class.fb-error]="!fb.isCorrect">
+        {{ fb.isCorrect ? '✓ ' + fb.text : '✗ ' + fb.text }}
+      </div>
+    }
+
+    <!-- Componente Ativo de Exercício -->
+    <main class="workout-body">
+      @if (workout.currentQuestion(); as q) {
+        <app-active-exercise 
+          [question]="q" 
+          [isReviewMode]="workout.state() === 'ERROR_REVIEW'"
+          [autoShowHint]="workout.naturalHintActive()"
+          (onAnswer)="onAnswerSubmitted($event)">
+        </app-active-exercise>
+      }
+    </main>
+  }
+
+  <!-- ==================== ESTADO 4: RESUMO & RESULTADOS ==================== -->
+  @if (workout.state() === 'SUMMARY') {
+    <div class="summary-container animate-fade-in">
+      <div class="summary-fox-header">
+        <img src="fox-mascot.png" alt="FoxMind" class="summary-fox-img" />
+        <div class="fox-speech-bubble animate-pop-in">
+          <h2>Treino Concluído!</h2>
+          <p>Você completou sua meta diária com consistência. <strong>Pode descansar por hoje.</strong></p>
+        </div>
+      </div>
+
+      <!-- Métricas Centrais -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-label">Precisão</span>
+          <span class="metric-value text-emerald">{{ workout.sessionResult()?.accuracyPercentage }}%</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Tempo Médio</span>
+          <span class="metric-value">{{ ((workout.sessionResult()?.averageResponseTimeMs || 0) / 1000).toFixed(1) }}s</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Experiência</span>
+          <span class="metric-value text-amber">+{{ workout.sessionResult()?.xpEarned }} XP</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Duração</span>
+          <span class="metric-value">{{ workout.sessionResult()?.totalDurationSeconds }}s</span>
+        </div>
+      </div>
+
+      <!-- Ações Finais -->
+      <div class="summary-actions">
+        <button class="btn-primary finish-btn" (click)="exitWorkout()">
+          Voltar ao Início
+        </button>
+        <button class="btn-secondary" (click)="startAnotherSession()">
+          Treinar Mais (Opcional)
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

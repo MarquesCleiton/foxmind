@@ -1,0 +1,131 @@
+<div class="progress-container animate-fade-in">
+
+  <header class="progress-header">
+    <h1 class="page-title">Seu Perfil Cognitivo</h1>
+    <p class="page-subtitle">Acompanhe sua evolução pessoal em cada uma das 6 habilidades cognitivas.</p>
+  </header>
+
+  <!-- Painel de Habilidades (Perfil Cognitivo) -->
+  <section class="skills-panel card">
+    <h2 class="section-title">Habilidades em Foco</h2>
+
+    <div class="skills-list">
+      <!-- Cálculo -->
+      <div class="skill-item">
+        <div class="skill-info">
+          <span class="skill-name">🔢 Cálculo Mental</span>
+          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.calculation }}</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-bar bar-calc" [style.width.%]="storage.profileSignal().cognitiveScores.calculation"></div>
+        </div>
+      </div>
+
+      <!-- Memória -->
+      <div class="skill-item">
+        <div class="skill-info">
+          <span class="skill-name">🧠 Memória de Trabalho</span>
+          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.memory }}</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-bar bar-mem" [style.width.%]="storage.profileSignal().cognitiveScores.memory"></div>
+        </div>
+      </div>
+
+      <!-- Atenção -->
+      <div class="skill-item">
+        <div class="skill-info">
+          <span class="skill-name">🎯 Atenção e Inibição</span>
+          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.attention }}</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-bar bar-att" [style.width.%]="storage.profileSignal().cognitiveScores.attention"></div>
+        </div>
+      </div>
+
+      <!-- Velocidade -->
+      <div class="skill-item">
+        <div class="skill-info">
+          <span class="skill-name">⚡ Velocidade de Processamento</span>
+          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.speed }}</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-bar bar-spd" [style.width.%]="storage.profileSignal().cognitiveScores.speed"></div>
+        </div>
+      </div>
+
+      <!-- Espacial -->
+      <div class="skill-item">
+        <div class="skill-info">
+          <span class="skill-name">📐 Memória Espacial</span>
+          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.spatial }}</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-bar bar-calc" [style.width.%]="storage.profileSignal().cognitiveScores.spatial"></div>
+        </div>
+      </div>
+
+      <!-- Flexibilidade -->
+      <div class="skill-item">
+        <div class="skill-info">
+          <span class="skill-name">🔄 Flexibilidade & Ordenação</span>
+          <span class="skill-score">{{ storage.profileSignal().cognitiveScores.flexibility }}</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-bar bar-mem" [style.width.%]="storage.profileSignal().cognitiveScores.flexibility"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Histórico das Últimas Sessões -->
+  <section class="sessions-history card">
+    <h2 class="section-title">Últimos Treinos Concluídos</h2>
+
+    @if (recentSessions().length === 0) {
+      <div class="empty-state">
+        <p>Você ainda não completou nenhum treino. Comece seu primeiro treino diário!</p>
+      </div>
+    } @else {
+      <div class="history-list">
+        @for (s of recentSessions(); track s.id) {
+          <div class="history-item">
+            <div class="history-left">
+              <span class="history-date">{{ s.date }}</span>
+              <span class="history-meta">{{ s.totalDurationSeconds }}s • {{ s.totalQuestions }} questões</span>
+            </div>
+            <div class="history-right">
+              <span class="history-accuracy badge badge-att">{{ s.accuracyPercentage }}% acerto</span>
+              <span class="history-xp badge badge-fox">+{{ s.xpEarned }} XP</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- Recordes Pessoais -->
+  @if (personalRecords().length > 0) {
+    <section class="records-panel card">
+      <h2 class="section-title">Recordes Pessoais</h2>
+      <div class="records-grid">
+        @for (rec of personalRecords(); track rec.category) {
+          <div class="record-card">
+            <span class="record-cat">{{ getCategoryLabel(rec.category) }}</span>
+            <div class="record-stats">
+              <div class="rec-stat">
+                <span class="rec-label">Melhor Precisão</span>
+                <span class="rec-val">{{ rec.bestAccuracy }}%</span>
+              </div>
+              <div class="rec-stat">
+                <span class="rec-label">Dificuldade Máx.</span>
+                <span class="rec-val">{{ rec.maxDifficulty }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+</div>

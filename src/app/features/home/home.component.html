@@ -1,0 +1,138 @@
+<div class="home-container animate-fade-in">
+
+  <!-- Header Superior com Mascote e Streak -->
+  <header class="home-header">
+    <div class="brand-row">
+      <div class="brand-avatar">
+        <img src="fox-mascot.png" alt="FoxMind" class="brand-img" />
+      </div>
+      <div class="brand-titles">
+        <h1 class="brand-name">FoxMind</h1>
+        <span class="brand-tagline">Treino de Foco Diário</span>
+      </div>
+    </div>
+
+    <div class="streak-pill">
+      <span class="streak-flame">🔥</span>
+      <span class="streak-number">{{ storage.profileSignal().streakCurrent }}</span>
+      <span class="streak-label">dias</span>
+    </div>
+  </header>
+
+  <!-- Saudação da Raposa Mentor -->
+  <section class="fox-greeting-card card animate-pop-in">
+    <div class="greeting-content">
+      <p class="greeting-title">Olá! Pronto para o treino de hoje?</p>
+      <p class="greeting-subtitle">
+        Uma sessão rápida de <strong>{{ currentMinutes() }} minutos</strong> mantém seus reflexos e memória em alta velocidade.
+      </p>
+    </div>
+  </section>
+
+  <!-- Card Principal: Seu Treino de Hoje (Alinhamento Perfeito) -->
+  <section class="daily-workout-card card">
+    <div class="workout-card-header-clean">
+      <div class="card-eyebrow-row">
+        <span class="card-eyebrow">RECOMENDADO DO DIA</span>
+        <div class="duration-badge-pill">
+          <span class="duration-icon">⏱</span>
+          <span class="duration-val">{{ currentMinutes() }}</span>
+          <span class="duration-unit">min</span>
+        </div>
+      </div>
+      <h2 class="workout-title">Seu Treino de Hoje</h2>
+    </div>
+
+    <!-- Grade Elegante de Habilidades -->
+    <div class="skills-grid">
+      <!-- Cálculo -->
+      <div class="skill-tile">
+        <div class="tile-icon-box icon-calc">🔢</div>
+        <div class="tile-info">
+          <span class="tile-name">Cálculo</span>
+          <span class="tile-time">{{ skillTime() }}</span>
+        </div>
+      </div>
+
+      <!-- Memória -->
+      <div class="skill-tile">
+        <div class="tile-icon-box icon-mem">🧠</div>
+        <div class="tile-info">
+          <span class="tile-name">Memória</span>
+          <span class="tile-time">{{ skillTime() }}</span>
+        </div>
+      </div>
+
+      <!-- Atenção -->
+      <div class="skill-tile">
+        <div class="tile-icon-box icon-att">🎯</div>
+        <div class="tile-info">
+          <span class="tile-name">Atenção</span>
+          <span class="tile-time">{{ skillTime() }}</span>
+        </div>
+      </div>
+
+      <!-- Velocidade -->
+      <div class="skill-tile">
+        <div class="tile-icon-box icon-spd">⚡</div>
+        <div class="tile-info">
+          <span class="tile-name">Velocidade</span>
+          <span class="tile-time">{{ skillTime() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary start-workout-btn" (click)="startWorkout()">
+      Começar Treino
+    </button>
+  </section>
+
+  <!-- Opções Rápidas de Duração -->
+  <section class="quick-modes">
+    <div class="section-heading">
+      <h3>Ou escolha seu tempo:</h3>
+    </div>
+    <div class="modes-grid">
+      <button 
+        class="mode-card card" 
+        [class.active]="currentMinutes() === 3"
+        (click)="selectDuration(3)">
+        <span class="mode-time">3 min</span>
+        <span class="mode-name">Expresso</span>
+      </button>
+
+      <button 
+        class="mode-card card" 
+        [class.active]="currentMinutes() === 8"
+        (click)="selectDuration(8)">
+        <span class="mode-time">8 min</span>
+        <span class="mode-name">Padrão</span>
+      </button>
+
+      <button 
+        class="mode-card card" 
+        [class.active]="currentMinutes() === 15"
+        (click)="selectDuration(15)">
+        <span class="mode-time">15 min</span>
+        <span class="mode-name">Intenso</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Resumo de Estatísticas Pessoais -->
+  <section class="stats-overview">
+    <div class="stat-mini-card card">
+      <span class="stat-mini-label">Nível Cognitivo</span>
+      <span class="stat-mini-val">Lvl {{ storage.profileSignal().level }}</span>
+    </div>
+    <div class="stat-mini-card card">
+      <span class="stat-mini-label">Total de XP</span>
+      <span class="stat-mini-val text-amber">{{ storage.profileSignal().totalXp }} XP</span>
+    </div>
+    <div class="stat-mini-card card">
+      <span class="stat-mini-label">Sessões Concluídas</span>
+      <span class="stat-mini-val">{{ storage.profileSignal().totalSessionsCompleted }}</span>
+    </div>
+  </section>
+
+</div>

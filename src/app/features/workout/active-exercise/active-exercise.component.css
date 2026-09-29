@@ -1,0 +1,595 @@
+.exercise-container {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+/* ==================== BARRA DE TEMPO (Item 2) ==================== */
+.timer-bar-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: -4px;
+}
+
+.timer-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.timer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-calc), var(--fox-primary));
+  border-radius: var(--radius-full);
+  transition: width 100ms linear;
+}
+
+.timer-fill.timer-warning {
+  background: linear-gradient(90deg, var(--color-spd), #f97316);
+}
+
+.timer-fill.timer-danger {
+  background: linear-gradient(90deg, #f97316, var(--error));
+}
+
+.timer-badge {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.timer-badge.badge-danger {
+  color: var(--error);
+  animation: subtlePulse 500ms infinite ease-in-out;
+}
+
+/* ==================== AJUDA NATURAL DA RAPOSA (Item 3) ==================== */
+.natural-help-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.fox-hint-trigger-btn {
+  background: var(--bg-surface);
+  border: 1px dashed rgba(249, 115, 22, 0.4);
+  color: var(--fox-light);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fox-hint-trigger-btn:hover {
+  background: var(--fox-surface);
+  border-color: var(--fox-primary);
+}
+
+.fox-hint-bubble {
+  width: 100%;
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  position: relative;
+}
+
+.fox-hint-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.fox-hint-body {
+  flex: 1;
+}
+
+.fox-hint-body strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--fox-primary);
+  margin-bottom: 2px;
+}
+
+.fox-hint-body p {
+  font-size: 0.84rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.hint-relief {
+  display: inline-block;
+  font-size: 0.76rem;
+  color: var(--color-att);
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.hint-close-btn {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 2px 6px;
+}
+
+/* Banner de Estratégia da Revisão */
+.strategy-banner {
+  width: 100%;
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.strategy-fox {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.strategy-text strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--fox-primary);
+  margin-bottom: 2px;
+}
+
+.strategy-text p {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* Título e Enunciado */
+.prompt-header {
+  text-align: center;
+  padding: 4px 12px;
+}
+
+.prompt-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+/* 1. Cálculo Mental */
+.math-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.equation {
+  font-family: var(--font-mono);
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.math-equals {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  color: var(--text-muted);
+}
+
+.math-target {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--fox-primary);
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.option-btn {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.option-btn:hover {
+  border-color: var(--border-focus);
+  background: var(--bg-surface-elevated);
+}
+
+.option-value {
+  font-family: var(--font-mono);
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.opt-unit {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.option-dimmed {
+  opacity: 0.18;
+  filter: grayscale(1);
+  pointer-events: none;
+  border-style: dashed;
+}
+
+/* 2. Problemas Contextuais */
+.word-problem-card {
+  width: 100%;
+  padding: 20px 18px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  text-align: center;
+}
+
+.word-problem-text {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+/* 3. Teste de Stroop */
+.stroop-card {
+  width: 100%;
+  padding: 32px 20px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stroop-word {
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.stroop-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.stroop-btn {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.stroop-btn:hover {
+  border-color: var(--border-focus);
+}
+
+/* 4. Padrões Lógicos */
+.pattern-card {
+  width: 100%;
+  padding: 24px 18px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pattern-display {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+/* 5. Sequência Numérica */
+.sequence-memorize {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.memorize-badge {
+  background: var(--color-mem-subtle);
+  color: var(--color-mem);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+}
+
+.digits-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.digit-box {
+  width: 50px;
+  height: 60px;
+  background: var(--bg-surface-elevated);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.sequence-input-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.entered-display {
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  text-align: center;
+}
+
+.entered-text {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--fox-primary);
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.key-btn {
+  height: 54px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.key-btn:active {
+  background: var(--bg-surface-elevated);
+  transform: scale(0.95);
+}
+
+.key-action { color: var(--error); }
+.key-confirm { background: var(--fox-primary); color: #fff; border-color: var(--fox-primary); }
+
+/* 6. Genius / Cores */
+.genius-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.genius-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  width: 250px;
+  height: 250px;
+}
+
+.genius-pad {
+  border-radius: var(--radius-lg);
+  border: 2px solid transparent;
+  transition: all 120ms ease;
+  opacity: 0.45;
+}
+
+.pad-cyan { background-color: var(--color-calc); }
+.pad-violet { background-color: var(--color-mem); }
+.pad-emerald { background-color: var(--color-att); }
+.pad-amber { background-color: var(--color-spd); }
+
+.genius-pad.active {
+  opacity: 1;
+  transform: scale(1.05);
+  box-shadow: 0 0 25px currentColor;
+}
+
+.genius-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* 7. Memória Espacial (Grade) */
+.spatial-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.spatial-grid {
+  display: grid;
+  gap: 10px;
+  width: 280px;
+  height: 280px;
+}
+
+.grid-cell {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.grid-cell.revealed {
+  background-color: var(--color-calc);
+  border-color: var(--color-calc);
+  box-shadow: 0 0 16px var(--color-calc-subtle);
+}
+
+.grid-cell.selected {
+  background-color: var(--fox-primary);
+  border-color: var(--fox-primary);
+  box-shadow: 0 0 16px var(--fox-glow);
+}
+
+.confirm-spatial-btn {
+  width: 100%;
+  max-width: 280px;
+}
+
+/* 8. Atenção & Reação */
+.attention-view {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.attention-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.att-btn {
+  background: var(--bg-surface);
+  border: 2px solid;
+  border-radius: var(--radius-lg);
+  padding: 22px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.att-btn:active {
+  transform: scale(0.96);
+}
+
+.color-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+}
+
+.item-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* 9. Ordenação */
+.ordering-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  width: 100%;
+}
+
+.ordered-slot-row {
+  width: 100%;
+  min-height: 56px;
+  background: var(--bg-surface-subtle);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.ordering-placeholder {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.ordered-pill {
+  background: var(--color-att-subtle);
+  color: var(--color-att);
+  border: 1px solid var(--color-att);
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+}
+
+.remaining-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.pick-pill-btn {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pick-pill-btn:hover {
+  border-color: var(--border-focus);
+}
