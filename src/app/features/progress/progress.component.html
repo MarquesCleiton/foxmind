@@ -117,7 +117,7 @@
           <div class="guide-rules-list">
             <div class="rule-item">
               <span class="rule-bullet">📈</span>
-              <p><strong>Subir de Nível:</strong> complete <strong>50 sessões</strong> com média de <strong>95% de acertos</strong> para ser promovido.</p>
+              <p><strong>Subir de Nível:</strong> complete <strong>{{ progressionConfig.SESSIONS_FOR_PROMOTION }} sessões</strong> com média de <strong>95% de acertos</strong> para ser promovido.</p>
             </div>
             <div class="rule-item">
               <span class="rule-bullet">🛡️</span>
@@ -351,11 +351,11 @@
                     <div class="skill-progress-bar">
                       <div
                         class="skill-progress-fill"
-                        [style.width.%]="sub.state.currentLevel === 5 ? 100 : (sub.sessionsCount >= 50 ? 100 : sub.sessionsCount * 2)"
-                        [class.fill-promote]="sub.sessionsCount >= 50 && sub.accuracy >= 95"
+                        [style.width.%]="sub.state.currentLevel === 5 ? 100 : (sub.sessionsCount >= progressionConfig.SESSIONS_FOR_PROMOTION ? 100 : (sub.sessionsCount / progressionConfig.SESSIONS_FOR_PROMOTION) * 100)"
+                        [class.fill-promote]="sub.sessionsCount >= progressionConfig.SESSIONS_FOR_PROMOTION && sub.accuracy >= 95"
                         [class.fill-danger]="sub.accuracy < 50 && sub.sessionsCount >= 10">
                       </div>
-                      <div class="skill-target-marker" title="Meta de 50 sessões e 95% para promoção"></div>
+                      <div class="skill-target-marker" title="Meta de {{ progressionConfig.SESSIONS_FOR_PROMOTION }} sessões e 95% para promoção"></div>
                     </div>
 
                     <!-- Mensagem Diagnóstica + Ação Direta -->
@@ -411,7 +411,7 @@
               <div class="goal-info">
                 <span class="goal-title">Critério para o Nível {{ target.level + 1 }}:</span>
                 <span class="goal-text">
-                  Completar <strong>50 sessões</strong> neste nível mantendo média geral de <strong>≥ 95% de acertos</strong>.
+                  Completar <strong>{{ progressionConfig.SESSIONS_FOR_PROMOTION }} sessões</strong> neste nível mantendo média geral de <strong>≥ 95% de acertos</strong>.
                 </span>
               </div>
             } @else {
@@ -429,7 +429,7 @@
           <div class="modal-progress-card">
             <div class="modal-prog-row">
               <span class="modal-prog-label">Sessões Concluídas no Nível:</span>
-              <span class="modal-prog-val"><strong>{{ target.sessionsCount }}</strong> / 50 sessões</span>
+              <span class="modal-prog-val"><strong>{{ target.sessionsCount }}</strong> / {{ progressionConfig.SESSIONS_FOR_PROMOTION }} sessões</span>
             </div>
             <div class="modal-prog-bar-track">
               <div

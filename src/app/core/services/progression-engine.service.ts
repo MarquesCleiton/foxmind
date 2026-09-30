@@ -98,16 +98,34 @@ export const FOCUS_SESSIONS: FocusSession[] = [
 ];
 
 // ── Tolerância de inatividade por nível ───────────────────────────────────────
-const INACTIVITY_TOLERANCE_DAYS: Record<ExerciseLevel, number> = {
-  1: Infinity, 2: 21, 3: 14, 4: 10, 5: 7
-};
-const INACTIVITY_WARNING_DAYS: Record<ExerciseLevel, number> = {
-  1: Infinity, 2: 15, 3: 10, 4: 7, 5: 5
+// ═══════════════════════════════════════════════════════════════════════════════
+// PROGRESSION_CONFIG — parâmetros globais de progressão de nível
+// Edite aqui para ajustar todo o sistema de progressão de uma só vez.
+// ═══════════════════════════════════════════════════════════════════════════════
+export const PROGRESSION_CONFIG = {
+  /** Sessões necessárias por nível para qualificar promoção */
+  SESSIONS_FOR_PROMOTION:   10,
+  /** Acurácia mínima (%) na janela de sessões para promoção */
+  PROMOTION_ACCURACY:       95,
+  /** Janela de sessões recentes usada para cálculo de acurácia rolling */
+  WINDOW_SIZE:              10,
+  /** Nível máximo atingível */
+  MAX_LEVEL:                5 as ExerciseLevel,
+  /** Questões mínimas por sessão para contar como sessão válida */
+  MIN_QUESTIONS_PER_SESSION: 5,
+  /** Tolerância de inatividade em dias por nível (Infinity = sem limite) */
+  INACTIVITY_TOLERANCE_DAYS: {
+    1: Infinity, 2: 21, 3: 14, 4: 10, 5: 7
+  } as Record<ExerciseLevel, number>,
+  /** Dias antes do decaimento para emitir aviso */
+  INACTIVITY_WARNING_DAYS: {
+    1: Infinity, 2: 15, 3: 10, 4: 7, 5: 5
+  } as Record<ExerciseLevel, number>,
 };
 
-export const REQUIRED_SESSIONS_FOR_PROMOTION = 50;
-export const PROMOTION_ACCURACY_THRESHOLD    = 95; // 95%
-const WINDOW_SIZE   = 20;
+// Aliases exportados para retrocompatibilidade com outros componentes
+export const REQUIRED_SESSIONS_FOR_PROMOTION = PROGRESSION_CONFIG.SESSIONS_FOR_PROMOTION;
+export const PROMOTION_ACCURACY_THRESHOLD    = PROGRESSION_CONFIG.PROMOTION_ACCURACY;
 
 @Injectable({ providedIn: 'root' })
 export class ProgressionEngineService {
@@ -258,7 +276,7 @@ export class ProgressionEngineService {
     const decayRisk = all
       .filter(s => {
         const days = this.daysUntilDecay(s);
-        return days !== null && days <= INACTIVITY_WARNING_DAYS[s.currentLevel];
+        return days !== null && days <= PROGRESSION_CONFIG.INACTIVITY_WARNING_DAYS[s.currentLevel];
       })
       .map(s => s.unitId);
 
@@ -307,7 +325,7 @@ export class ProgressionEngineService {
 
   daysUntilDecay(state: TestProgressionState): number | null {
     if (state.currentLevel === 1 || state.lastTrainedAt === 0) return null;
-    const tolerance = INACTIVITY_TOLERANCE_DAYS[state.currentLevel];
+    const tolerance = PROGRESSION_CONFIG.INACTIVITY_TOLERANCE_DAYS[state.currentLevel];
     if (tolerance === Infinity) return null;
     const daysSince = (Date.now() - state.lastTrainedAt) / (1000 * 60 * 60 * 24);
     return Math.max(0, Math.ceil(tolerance - daysSince));
@@ -316,7 +334,7 @@ export class ProgressionEngineService {
   isInDecayWarning(state: TestProgressionState): boolean {
     const remaining = this.daysUntilDecay(state);
     if (remaining === null) return false;
-    return remaining <= INACTIVITY_WARNING_DAYS[state.currentLevel];
+    return remaining <= PROGRESSION_CONFIG.INACTIVITY_WARNING_DAYS[state.currentLevel];
   }
 
   // ── Registro de Tentativa em Tempo Real ────────────────────────────────────
@@ -330,7 +348,7 @@ export class ProgressionEngineService {
 
     const attempt: TestAttemptRecord = { isCorrect, timestamp: Date.now(), responseTimeMs };
     state.recentAttempts.push(attempt);
-    if (state.recentAttempts.length > WINDOW_SIZE) state.recentAttempts.shift();
+    if (state.recentAttempts.length > PROGRESSION_CONFIG.WINDOW_SIZE) state.recentAttempts.shift();
 
     state.totalAttemptsAtLevel++;
     if (isCorrect) state.correctCountAtLevel++;
@@ -347,7 +365,7 @@ export class ProgressionEngineService {
     return { levelUp: false, levelDown: false, newLevel: state.currentLevel };
   }
 
-  // ── Registro de Sessão Completa (Promoção por 50 Sessões com Média >= 95%) ───
+  // ── Registro de Sessão Completa (Promoção por sessões com Média >= 95%) ───
   async recordCompletedSession(
     unitId: FocusUnitId,
     sessionRecord: SessionSummaryRecord
@@ -356,7 +374,7 @@ export class ProgressionEngineService {
     const state = this.getState(unitId);
     state.recentSessions = state.recentSessions || [];
     state.recentSessions.push(sessionRecord);
-    if (state.recentSessions.length > REQUIRED_SESSIONS_FOR_PROMOTION) {
+    if (state.recentSessions.length > PROGRESSION_CONFIG.SESSIONS_FOR_PROMOTION) {
       state.recentSessions.shift();
     }
 
@@ -375,11 +393,11 @@ export class ProgressionEngineService {
 
     let levelUp = false;
 
-    // Regra das 50 sessões consistentes com média >= 95%
+    // Regra de promoção: SESSIONS_FOR_PROMOTION sessões com média >= PROMOTION_ACCURACY%
     if (
-      sessionsAtLevel.length >= REQUIRED_SESSIONS_FOR_PROMOTION &&
-      avgAcc >= PROMOTION_ACCURACY_THRESHOLD &&
-      state.currentLevel < 5
+      sessionsAtLevel.length >= PROGRESSION_CONFIG.SESSIONS_FOR_PROMOTION &&
+      avgAcc >= PROGRESSION_CONFIG.PROMOTION_ACCURACY &&
+      state.currentLevel < PROGRESSION_CONFIG.MAX_LEVEL
     ) {
       state.currentLevel = (state.currentLevel + 1) as ExerciseLevel;
       state.promotedAt = Date.now();
@@ -466,7 +484,7 @@ export class ProgressionEngineService {
     for (const unitId of ALL_FOCUS_UNIT_IDS) {
       const state = this.states.get(unitId);
       if (!state || state.currentLevel === 1 || state.lastTrainedAt === 0) continue;
-      const tolerance = INACTIVITY_TOLERANCE_DAYS[state.currentLevel];
+      const tolerance = PROGRESSION_CONFIG.INACTIVITY_TOLERANCE_DAYS[state.currentLevel];
       if (tolerance === Infinity) continue;
       const daysSince = (Date.now() - state.lastTrainedAt) / (1000 * 60 * 60 * 24);
       if (daysSince >= tolerance) {

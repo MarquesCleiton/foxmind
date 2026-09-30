@@ -6,7 +6,8 @@ import {
   ProgressionEngineService,
   ALL_FOCUS_UNITS,
   FOCUS_SESSIONS,
-  FocusUnitMeta
+  FocusUnitMeta,
+  PROGRESSION_CONFIG
 } from '../../core/services/progression-engine.service';
 import {
   FocusUnitId,
@@ -77,6 +78,9 @@ export class FocusComponent implements OnInit {
 
   // Controle de expansão das sessões (minimizadas por padrão)
   public expandedSessions = signal<Record<string, boolean>>({});
+
+  // Configuração global de progressão (acessível no template)
+  public readonly progressionConfig = PROGRESSION_CONFIG;
 
   public overallProgression = computed(() => this.progression.getOverallProgression());
 

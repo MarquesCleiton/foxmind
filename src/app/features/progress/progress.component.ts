@@ -7,7 +7,8 @@ import {
   ProgressionEngineService,
   FOCUS_SESSIONS,
   ALL_FOCUS_UNITS,
-  FocusUnitMeta
+  FocusUnitMeta,
+  PROGRESSION_CONFIG
 } from '../../core/services/progression-engine.service';
 import {
   DailyWorkoutSession,
@@ -112,6 +113,9 @@ export class ProgressComponent implements OnInit {
   // Sessões centrais (exclui o 'geral' para segmentação visual clara)
   public readonly coreSessions = FOCUS_SESSIONS.filter(s => s.id !== 'geral');
 
+  // Configuração global de progressão (acessível no template)
+  public readonly progressionConfig = PROGRESSION_CONFIG;
+
   // Progressão Geral do Jogador (Níveis 1.0 a 5.0)
   public overall = computed<PlayerOverallProgression>(() => {
     return this.progression.getOverallProgression();
@@ -178,7 +182,7 @@ export class ProgressComponent implements OnInit {
           sessionsCount: sessions,
           gapPercentage: gap,
           diagnosticTitle: `${meta.name} (${s.accuracyPercentage}% de precisão)`,
-          diagnosticDesc: `Sua precisão atual está ${gap}% abaixo da meta de 95% (completou ${sessions}/50 sessões).`,
+          diagnosticDesc: `Sua precisão atual está ${gap}% abaixo da meta de 95% (completou ${sessions}/${PROGRESSION_CONFIG.SESSIONS_FOR_PROMOTION} sessões).`,
           recommendation: `Pratique treinos focados em ${meta.name.toLowerCase()} para consolidar sua precisão e destravar o Nível Geral.`,
           tagClass: 'tag-danger',
           tagLabel: '🚨 Gargalo a Superar'
@@ -210,7 +214,7 @@ export class ProgressComponent implements OnInit {
         const levelTitle = this.progression.getLevelFullLabel(s.currentLevel);
         const gap = Math.max(0, 95 - s.accuracyPercentage);
         const sessions = s.totalSessionsAtLevel || 0;
-        const sessionsRemaining = Math.max(0, 50 - sessions);
+        const sessionsRemaining = Math.max(0, PROGRESSION_CONFIG.SESSIONS_FOR_PROMOTION - sessions);
 
         let desc = '';
         if (sessionsRemaining === 0 && gap === 0) {
@@ -218,7 +222,7 @@ export class ProgressComponent implements OnInit {
         } else if (gap === 0) {
           desc = `Precisão em 95%+! Faltam ${sessionsRemaining} sessões neste nível para a promoção oficial.`;
         } else {
-          desc = `Precisão em ${s.accuracyPercentage}% (${gap}% para a meta de 95%) • ${sessions}/50 sessões concluídas.`;
+          desc = `Precisão em ${s.accuracyPercentage}% (${gap}% para a meta de 95%) • ${sessions}/${PROGRESSION_CONFIG.SESSIONS_FOR_PROMOTION} sessões concluídas.`;
         }
 
         return {
@@ -228,9 +232,9 @@ export class ProgressComponent implements OnInit {
           accuracy: s.accuracyPercentage,
           sessionsCount: sessions,
           gapPercentage: gap,
-          diagnosticTitle: `${meta.name} (${s.accuracyPercentage}% precisão • ${sessions}/50 sessões)`,
+          diagnosticTitle: `${meta.name} (${s.accuracyPercentage}% precisão • ${sessions}/${PROGRESSION_CONFIG.SESSIONS_FOR_PROMOTION} sessões)`,
           diagnosticDesc: desc,
-          recommendation: `Faça treinos focados para consolidar as 50 sessões necessárias.`,
+          recommendation: `Faça treinos focados para consolidar as ${PROGRESSION_CONFIG.SESSIONS_FOR_PROMOTION} sessões necessárias.`,
           tagClass: 'tag-success',
           tagLabel: '📈 Em Rota de Promoção'
         };
@@ -292,8 +296,9 @@ export class ProgressComponent implements OnInit {
         const levelTitle = this.progression.getLevelFullLabel(state.currentLevel);
         const targetQuestions = this.progression.questionsForUnit(uid, state.currentLevel);
 
-        // Progresso rumo às 50 sessões
-        const progressPercent = state.currentLevel === 5 ? 100 : Math.min(100, sessionsCount * 2);
+        // Progresso rumo às sessões necessárias para promoção
+        const N = PROGRESSION_CONFIG.SESSIONS_FOR_PROMOTION;
+        const progressPercent = state.currentLevel === 5 ? 100 : Math.min(100, (sessionsCount / N) * 100);
         const gapToGoal = Math.max(0, 95 - accuracy);
 
         // Mensagem diagnóstica precisa
@@ -309,14 +314,14 @@ export class ProgressComponent implements OnInit {
           statusText = 'Início • Base';
           statusClass = 'status-untrained';
           diagnosticMessage = '⚪ Comece no Nível 1 básico para traçar sua evolução.';
-        } else if (sessionsCount >= 50 && accuracy >= 95) {
+        } else if (sessionsCount >= N && accuracy >= 95) {
           statusText = `🚀 Apto ao Nível ${state.currentLevel + 1}`;
           statusClass = 'status-promote';
-          diagnosticMessage = `✨ Meta de 50 sessões e 95% atingida! Promoção apta ao Nível ${state.currentLevel + 1}.`;
+          diagnosticMessage = `✨ Meta de ${N} sessões e 95% atingida! Promoção apta ao Nível ${state.currentLevel + 1}.`;
         } else if (accuracy >= 95) {
-          statusText = `${sessionsCount}/50 sessões`;
+          statusText = `${sessionsCount}/${N} sessões`;
           statusClass = 'status-high';
-          diagnosticMessage = `🎯 Precisão exemplar (${accuracy}%). Conclua ${50 - sessionsCount} sessões p/ promover.`;
+          diagnosticMessage = `🎯 Precisão exemplar (${accuracy}%). Conclua ${N - sessionsCount} sessões p/ promover.`;
         } else if (sessionsCount >= 10 && accuracy < 50) {
           statusText = '⚠️ Risco de queda';
           statusClass = 'status-danger';
@@ -324,11 +329,11 @@ export class ProgressComponent implements OnInit {
         } else if (accuracy < 70) {
           statusText = `${accuracy}% precisão`;
           statusClass = 'status-danger';
-          diagnosticMessage = `🔴 Abaixo da meta. Faltam ${gapToGoal}% de precisão (${sessionsCount}/50 sessões).`;
+          diagnosticMessage = `🔴 Abaixo da meta. Faltam ${gapToGoal}% de precisão (${sessionsCount}/${N} sessões).`;
         } else {
           statusText = `${accuracy}% precisão`;
           statusClass = 'status-normal';
-          diagnosticMessage = `🟡 Em consolidação. ${sessionsCount}/50 sessões concluídas.`;
+          diagnosticMessage = `🟡 Em consolidação. ${sessionsCount}/${N} sessões concluídas.`;
         }
 
         // Informação do Escudo de Inatividade

@@ -136,7 +136,7 @@
                       [class.fill-promote]="unit.sessionsCount >= 50 && unit.accuracy >= 95"
                       [class.fill-danger]="unit.accuracy < 50 && unit.sessionsCount >= 10">
                     </div>
-                    <div class="row-progress-target-line" title="Meta: 50 sessões com ≥ 95% de precisão"></div>
+                    <div class="row-progress-target-line" title="Meta: {{ progressionConfig.SESSIONS_FOR_PROMOTION }} sessões com ≥ 95% de precisão"></div>
                   </div>
 
                   <!-- Linha 3: Métricas & Botão Desafiar -->
@@ -145,9 +145,9 @@
                       @if (unit.sessionsCount > 0) {
                         <span class="stat-accuracy">{{ unit.accuracy }}% precisão</span>
                         <span class="stat-dot">•</span>
-                        <span class="stat-attempts">{{ unit.sessionsCount }}/50 sessões</span>
+                        <span class="stat-attempts">{{ unit.sessionsCount }}/{{ progressionConfig.SESSIONS_FOR_PROMOTION }} sessões</span>
                       } @else {
-                        <span class="stat-new">0/50 sessões • {{ unit.levelTitle }}</span>
+                        <span class="stat-new">0/{{ progressionConfig.SESSIONS_FOR_PROMOTION }} sessões • {{ unit.levelTitle }}</span>
                       }
 
                       @if (unit.shieldLabel) {
@@ -203,7 +203,7 @@
               <div class="goal-info">
                 <span class="goal-title">Critério para o Nível {{ target.level + 1 }}:</span>
                 <span class="goal-text">
-                  Completar <strong>50 sessões</strong> neste nível mantendo média geral de <strong>≥ 95% de acertos</strong>.
+                  Completar <strong>{{ progressionConfig.SESSIONS_FOR_PROMOTION }} sessões</strong> neste nível mantendo média geral de <strong>≥ 95% de acertos</strong>.
                 </span>
               </div>
             } @else {
@@ -221,7 +221,7 @@
           <div class="modal-progress-card">
             <div class="modal-prog-row">
               <span class="modal-prog-label">Sessões Concluídas no Nível:</span>
-              <span class="modal-prog-val"><strong>{{ target.sessionsCount }}</strong> / 50 sessões</span>
+              <span class="modal-prog-val"><strong>{{ target.sessionsCount }}</strong> / {{ progressionConfig.SESSIONS_FOR_PROMOTION }} sessões</span>
             </div>
             <div class="modal-prog-bar-track">
               <div
