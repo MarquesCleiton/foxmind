@@ -1,0 +1,801 @@
+/* ==========================================================================
+   FoxMind — Guia & Manual de Maestria Cognitiva (Design System)
+   Filosofia: Alta fidelidade aos exemplos de resposta da Raposa
+   ========================================================================== */
+
+.guide-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px 16px 96px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ==================== HEADER ==================== */
+.guide-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guide-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.guide-mascot-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(249, 115, 22, 0.05));
+  border: 1.5px solid rgba(249, 115, 22, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  box-shadow: 0 0 16px var(--fox-glow);
+  flex-shrink: 0;
+}
+
+.guide-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.guide-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--fox-primary);
+  text-transform: uppercase;
+}
+
+.guide-main-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  line-height: 1.25;
+}
+
+.guide-lead-text {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+/* ==================== BARRA DE BUSCA ==================== */
+.search-bar-wrap {
+  width: 100%;
+}
+
+.search-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 2px 12px;
+  transition: all var(--transition-fast);
+}
+
+.search-input-box:focus-within {
+  border-color: var(--fox-primary);
+  box-shadow: 0 0 16px var(--fox-glow);
+  background: var(--bg-surface-elevated);
+}
+
+.search-icon {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-right: 8px;
+}
+
+.guide-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.88rem;
+  padding: 10px 0;
+}
+
+.guide-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.btn-clear-search {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+}
+
+.btn-clear-search:hover {
+  color: var(--fox-primary);
+}
+
+/* ==================== CATEGORY PILLS ==================== */
+.category-pills-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.category-pills-row::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-pill {
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-pill:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.filter-pill.active {
+  background: var(--fox-primary);
+  color: #ffffff;
+  border-color: var(--fox-primary);
+  box-shadow: 0 0 12px var(--fox-glow);
+}
+
+.filter-pill.pill-calc.active {
+  background: var(--color-calc);
+  border-color: var(--color-calc);
+  box-shadow: 0 0 12px var(--color-calc-subtle);
+}
+
+.filter-pill.pill-mem.active {
+  background: var(--color-mem);
+  border-color: var(--color-mem);
+  box-shadow: 0 0 12px var(--color-mem-subtle);
+}
+
+.filter-pill.pill-att.active {
+  background: var(--color-att);
+  border-color: var(--color-att);
+  box-shadow: 0 0 12px var(--color-att-subtle);
+}
+
+.filter-pill.pill-logic.active {
+  background: var(--color-spd);
+  border-color: var(--color-spd);
+  box-shadow: 0 0 12px var(--color-spd-subtle);
+}
+
+/* ==================== CONTROLS STATUS BAR ==================== */
+.controls-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+.status-counter strong {
+  color: var(--fox-light);
+}
+
+.quick-toggle-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-link-action {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 4px;
+  transition: color var(--transition-fast);
+}
+
+.btn-link-action:hover {
+  color: var(--fox-primary);
+}
+
+.action-divider {
+  color: var(--text-muted);
+}
+
+/* ==================== TOPICS GRID ==================== */
+.topics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==================== TOPIC CARD ==================== */
+.topic-card {
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.topic-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.topic-card[data-cat="CALCULATION"] {
+  border-left: 3.5px solid var(--color-calc);
+}
+
+.topic-card[data-cat="MEMORY"] {
+  border-left: 3.5px solid var(--color-mem);
+}
+
+.topic-card[data-cat="ATTENTION"] {
+  border-left: 3.5px solid var(--color-att);
+}
+
+.topic-card[data-cat="LOGIC"] {
+  border-left: 3.5px solid var(--color-spd);
+}
+
+/* ==================== HEADER DO TOPIC ==================== */
+.topic-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.topic-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topic-icon {
+  font-size: 1.45rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.topic-title-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topic-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.topic-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.category-meta-tag {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.meta-dot {
+  opacity: 0.5;
+}
+
+.level-meta-tag {
+  color: var(--text-muted);
+}
+
+/* ==================== BADGES COMPACTOS (PADRÃO DA IMAGEM) ==================== */
+.badge-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge-direct {
+  background: rgba(14, 165, 233, 0.18);
+  color: #38bdf8;
+  border: 1px solid rgba(14, 165, 233, 0.4);
+}
+
+.badge-reverse {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.badge-calc {
+  background: rgba(6, 182, 212, 0.18);
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+.badge-mem {
+  background: rgba(168, 85, 247, 0.18);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.badge-att {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.badge-logic {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+/* ==================== REGRA E ENUNCIADO ==================== */
+.topic-rule-box {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.rule-description {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.rule-description strong {
+  color: #fbbf24;
+  display: block;
+  margin-top: 3px;
+  font-size: 0.83rem;
+}
+
+/* ==================== 1. EXEMPLO DE RESPOSTA (ESTILO ELEGANTE DA IMAGEM) ==================== */
+.pre-start-example-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+.example-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.example-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fox-primary);
+}
+
+.example-mode-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* Fluxo Visual */
+.example-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+}
+
+.example-step {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.step-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.highlight-label {
+  color: var(--fox-light);
+  font-weight: 700;
+}
+
+.demo-digits {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Pílula de Dígito / Resposta */
+.demo-pill {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.demo-pill.active {
+  background: linear-gradient(135deg, var(--fox-primary), #ea580c);
+  border-color: var(--fox-primary);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.45);
+}
+
+.demo-pill-sm {
+  min-width: 24px;
+  height: 24px;
+  font-size: 0.78rem;
+}
+
+.example-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--fox-light);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
+.example-reasoning-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.reasoning-symbol {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* Exemplo Secundário / Variação */
+.secondary-example-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  margin-top: 2px;
+}
+
+.sec-step {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.sec-label {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+.sec-arrow {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+}
+
+.sec-reasoning {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 0;
+  font-style: italic;
+  padding-left: 4px;
+}
+
+/* ==================== 2. DICA DA RAPOSA (ESTILO DA IMAGEM) ==================== */
+.pre-start-strategy {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(249, 115, 22, 0.08);
+  border-left: 3px solid var(--fox-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 10px 12px;
+}
+
+.strategy-fox-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.strategy-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.strategy-lead {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--fox-light);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.strategy-text {
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ==================== 3. ACELERAÇÃO DE PENSAMENTO ==================== */
+.speed-hacks-section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.speed-hacks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: rgba(0, 0, 0, 0.15);
+  transition: background var(--transition-fast);
+}
+
+.speed-hacks-header:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.speed-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.speed-bolt {
+  font-size: 0.95rem;
+  color: #fbbf24;
+}
+
+.speed-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.btn-toggle-hacks {
+  background: none;
+  border: none;
+  color: var(--fox-light);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.speed-hacks-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hack-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+}
+
+.hack-header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hack-bullet {
+  color: var(--fox-primary);
+  font-size: 0.65rem;
+}
+
+.hack-title {
+  font-size: 0.8rem;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.hack-desc {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  margin: 0;
+  padding-left: 14px;
+}
+
+/* ==================== 4. BOTÃO DE TREINO ==================== */
+.topic-footer-action {
+  margin-top: 4px;
+}
+
+.start-topic-btn {
+  width: 100%;
+  padding: 11px 16px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--fox-primary), #ea580c);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px var(--fox-glow);
+  transition: all var(--transition-fast);
+}
+
+.start-topic-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px var(--fox-glow);
+}
+
+.start-topic-btn:active {
+  transform: scale(0.98);
+}
+
+/* ==================== ESTADO VAZIO ==================== */
+.empty-results-card {
+  text-align: center;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.empty-icon {
+  font-size: 2.2rem;
+  opacity: 0.6;
+}
+
+.empty-results-card h3 {
+  font-size: 1.1rem;
+  color: #ffffff;
+}
+
+.empty-results-card p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 320px;
+}
+
+/* ==================== RODAPÉ ==================== */
+.guide-footer-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-top: 10px;
+}
+
+.footer-fox-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.guide-footer-note p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ==================== RESPONSIVIDADE ==================== */
+@media (max-width: 480px) {
+  .guide-container {
+    padding: 12px 12px 90px 12px;
+  }
+
+  .guide-main-title {
+    font-size: 1.25rem;
+  }
+
+  .example-flow {
+    padding: 6px 8px;
+  }
+
+  .demo-pill {
+    min-width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+    padding: 0 4px;
+  }
+
+  .example-arrow {
+    font-size: 0.62rem;
+  }
+}
