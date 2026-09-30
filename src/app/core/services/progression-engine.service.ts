@@ -361,6 +361,8 @@ export class ProgressionEngineService {
     }
 
     state.totalSessionsAtLevel = (state.totalSessionsAtLevel || 0) + 1;
+    state.totalAttemptsAtLevel = (state.totalAttemptsAtLevel || 0) + sessionRecord.totalQuestions;
+    state.correctCountAtLevel = (state.correctCountAtLevel || 0) + sessionRecord.correctCount;
     state.lastTrainedAt = Date.now();
 
     // Acurácia média histórica das sessões no nível atual
@@ -522,16 +524,62 @@ export class ProgressionEngineService {
   }
 
   /**
-   * Monta o plano do Treino Focal: padrão 20 Questões
-   * 100% focado nas unidades selecionadas no nível do jogador.
+   * Retorna a quantidade exata de questões para um treino focal da unidade:
+   * - No Nível 1 das 4 operações básicas: conjunto exaustivo completo sem redundância (45 ou 81 questões)
+   * - Para todos os outros itens e níveis 2+: 20 questões padrão
+   */
+  questionsForUnit(unitId: FocusUnitId, level?: ExerciseLevel): number {
+    const lvl = level ?? this.getLevel(unitId);
+    if (lvl === 1) {
+      if (unitId === 'math-addition' || unitId === 'math-multiplication') return 45;
+      if (unitId === 'math-subtraction' || unitId === 'math-division') return 81;
+    }
+    return 20;
+  }
+
+  /**
+   * Texto explicativo do formato de treino daquela unidade
+   */
+  getChallengeFormatLabel(unitId: FocusUnitId, level?: ExerciseLevel): string {
+    const lvl = level ?? this.getLevel(unitId);
+    if (lvl === 1) {
+      switch (unitId) {
+        case 'math-addition':
+          return 'Conjunto Completo: 45 questões únicas (todas as somas de 1 dígito 1+1 a 9+9)';
+        case 'math-subtraction':
+          return 'Conjunto Completo: 81 questões com polaridades (1-1 a 9-9 e valores negativos)';
+        case 'math-multiplication':
+          return 'Conjunto Completo: 45 questões únicas (todas as multiplicações 1×1 a 9×9)';
+        case 'math-division':
+          return 'Conjunto Completo: 81 divisões exatas da tabuada (1÷1 a 81÷9)';
+      }
+    }
+    return 'Treino Focal Padrão: 20 questões exclusivas no seu nível.';
+  }
+
+  /**
+   * Monta o plano do Treino Focal:
+   * - Se for unidade única sem total forçado, utiliza questionsForUnit(unitId, forcedLevel)
+   * - Caso contrário, utiliza o total solicitado (padrão 20)
    */
   buildFocalWorkoutPlan(
     unitIds: FocusUnitId[],
-    totalQuestions = 20,
+    totalQuestions?: number,
     forcedLevel?: ExerciseLevel
   ): Array<{ unitId: FocusUnitId; level: ExerciseLevel }> {
+    let count = totalQuestions;
+    if (!count) {
+      if (unitIds.length === 1) {
+        const uid = unitIds[0];
+        const lvl = forcedLevel ?? this.getLevel(uid);
+        count = this.questionsForUnit(uid, lvl);
+      } else {
+        count = 20;
+      }
+    }
+
     const plan: Array<{ unitId: FocusUnitId; level: ExerciseLevel }> = [];
-    for (let i = 0; i < totalQuestions; i++) {
+    for (let i = 0; i < count; i++) {
       const unitId = unitIds[i % unitIds.length];
       plan.push({ unitId, level: forcedLevel ?? this.getLevel(unitId) });
     }

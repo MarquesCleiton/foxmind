@@ -158,7 +158,7 @@
                     <button
                       class="btn-challenge-action"
                       (click)="openUnitModal(unit.meta, $event)">
-                      Desafiar (20Q) →
+                      Desafiar ({{ unit.targetQuestions }}Q) →
                     </button>
                   </div>
 
@@ -172,7 +172,7 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════
-         MODAL DE CONFIRMAÇÃO DO DESAFIO (PADRÃO 20 QUESTÕES)
+         MODAL DE CONFIRMAÇÃO DO DESAFIO
          ═══════════════════════════════════════════════════════════ -->
     @if (modalTarget(); as target) {
       <div class="modal-backdrop" (click)="closeModal()">
@@ -238,10 +238,10 @@
             </div>
           </div>
 
-          <!-- Pílula de Formato Padrão -->
+          <!-- Pílula de Formato da Sessão -->
           <div class="challenge-format-pill">
             <span class="fmt-icon">📝</span>
-            <span class="fmt-text"><strong>Treino Focal Padrão:</strong> 20 questões exclusivas no seu nível.</span>
+            <span class="fmt-text">{{ target.formatLabel }}</span>
           </div>
 
           <!-- Botão Principal de Iniciar -->
@@ -253,7 +253,7 @@
               @if (isStarting()) {
                 <span class="spin-sm"></span> Preparando treino...
               } @else {
-                <span>▶ Iniciar Desafio (20 Questões)</span>
+                <span>▶ Iniciar Desafio ({{ target.questionCount }} Questões)</span>
               }
             </button>
           </div>

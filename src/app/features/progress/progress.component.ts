@@ -41,6 +41,7 @@ export interface SubsegmentItem {
   isTrained: boolean;
   accuracy: number;
   sessionsCount: number;
+  targetQuestions: number;
   progressPercent: number; // 0 a 100
   gapToGoal: number;
   daysUntilDecay: number | null;
@@ -79,6 +80,8 @@ export interface ProgressModalTarget {
   levelTitle: string;
   sessionsCount: number;
   accuracy: number;
+  questionCount: number;
+  formatLabel: string;
 }
 
 @Component({
@@ -100,7 +103,7 @@ export class ProgressComponent implements OnInit {
   public recentSessions = signal<DailyWorkoutSession[]>([]);
   public personalRecords = signal<PersonalRecord[]>([]);
 
-  // Modal de Desafio Focado (20 Questões)
+  // Modal de Desafio Focado
   public modalTarget = signal<ProgressModalTarget | null>(null);
 
   // Controle de expansão de cada sessão (minimizadas por padrão)
@@ -176,7 +179,7 @@ export class ProgressComponent implements OnInit {
           gapPercentage: gap,
           diagnosticTitle: `${meta.name} (${s.accuracyPercentage}% de precisão)`,
           diagnosticDesc: `Sua precisão atual está ${gap}% abaixo da meta de 95% (completou ${sessions}/50 sessões).`,
-          recommendation: `Pratique treinos focados de 20 questões em ${meta.name.toLowerCase()} para consolidar sua precisão e destravar o Nível Geral.`,
+          recommendation: `Pratique treinos focados em ${meta.name.toLowerCase()} para consolidar sua precisão e destravar o Nível Geral.`,
           tagClass: 'tag-danger',
           tagLabel: '🚨 Gargalo a Superar'
         };
@@ -189,7 +192,7 @@ export class ProgressComponent implements OnInit {
     const states = this.progression.getAllStates();
     const bottleneckId = this.overall().bottleneckUnitId;
 
-    // Habilidades com boa evolução: (>= 25 sessões e >= 80% acerto) ou (>= 90% acerto)
+    // Habilidades com boa evolução: (>= 20 sessões e >= 75% acerto) ou (>= 90% acerto)
     const items = states.filter(s =>
       (s.lastTrainedAt > 0 || (s.totalSessionsAtLevel || 0) > 0) &&
       s.unitId !== bottleneckId &&
@@ -227,7 +230,7 @@ export class ProgressComponent implements OnInit {
           gapPercentage: gap,
           diagnosticTitle: `${meta.name} (${s.accuracyPercentage}% precisão • ${sessions}/50 sessões)`,
           diagnosticDesc: desc,
-          recommendation: `Faça treinos focados de 20 questões para consolidar as 50 sessões necessárias.`,
+          recommendation: `Faça treinos focados para consolidar as 50 sessões necessárias.`,
           tagClass: 'tag-success',
           tagLabel: '📈 Em Rota de Promoção'
         };
@@ -287,6 +290,7 @@ export class ProgressComponent implements OnInit {
         const isBottleneck = overall.bottleneckUnitId !== null && uid === overall.bottleneckUnitId && isTrained;
         const isPeak = overall.peakUnitId !== null && uid === overall.peakUnitId && !isBottleneck && isTrained;
         const levelTitle = this.progression.getLevelFullLabel(state.currentLevel);
+        const targetQuestions = this.progression.questionsForUnit(uid, state.currentLevel);
 
         // Progresso rumo às 50 sessões
         const progressPercent = state.currentLevel === 5 ? 100 : Math.min(100, sessionsCount * 2);
@@ -357,6 +361,7 @@ export class ProgressComponent implements OnInit {
           isTrained,
           accuracy,
           sessionsCount,
+          targetQuestions,
           progressPercent,
           gapToGoal,
           daysUntilDecay,
@@ -449,10 +454,13 @@ export class ProgressComponent implements OnInit {
     return this.expandedSessions()[sessionId] ?? false;
   }
 
-  // ── Modal de Treino Rápido (20 Questões) ──────────────────────────────────
+  // ── Modal de Treino Rápido ────────────────────────────────────────────────
   public openUnitModal(meta: FocusUnitMeta, event?: Event): void {
     if (event) event.stopPropagation();
     const state = this.progression.getState(meta.unitId);
+    const questionCount = this.progression.questionsForUnit(meta.unitId, state.currentLevel);
+    const formatLabel = this.progression.getChallengeFormatLabel(meta.unitId, state.currentLevel);
+
     this.modalTarget.set({
       type: 'unit',
       meta,
@@ -460,7 +468,9 @@ export class ProgressComponent implements OnInit {
       level: state.currentLevel,
       levelTitle: this.progression.getLevelFullLabel(state.currentLevel),
       sessionsCount: state.totalSessionsAtLevel || 0,
-      accuracy: state.accuracyPercentage
+      accuracy: state.accuracyPercentage,
+      questionCount,
+      formatLabel
     });
   }
 
@@ -479,7 +489,9 @@ export class ProgressComponent implements OnInit {
       level: Math.round(avgLevel),
       levelTitle: this.progression.getLevelFullLabel(avgLevel),
       sessionsCount: totalSessions,
-      accuracy: avgAcc
+      accuracy: avgAcc,
+      questionCount: 20,
+      formatLabel: `Treino de Domínio: 20 questões combinadas entre as ${session.unitIds.length} habilidades.`
     });
   }
 
@@ -498,14 +510,14 @@ export class ProgressComponent implements OnInit {
       config = {
         unitIds: [target.meta.unitId],
         durationMinutes: 5,
-        questionCount: 20
+        questionCount: target.questionCount
       };
     } else if (target.type === 'session' && target.session) {
       config = {
         unitIds: target.session.unitIds,
         sessionId: target.session.id,
         durationMinutes: 5,
-        questionCount: 20
+        questionCount: target.questionCount || 20
       };
     } else {
       this.isStarting.set(false);

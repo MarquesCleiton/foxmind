@@ -214,6 +214,20 @@ export class AdaptiveEngineService {
     }
   }
 
+  /**
+   * Reinicia e reembaralha os baralhos exaustivos de 1 dígito para que a nova sessão
+   * percorra 100% de todos os conjuntos possíveis sem repetição interna.
+   */
+  public resetMathDecks(): void {
+    if (this.additionDeckN1.length === 0) {
+      this.initExhaustiveMathDecks();
+    }
+    this.activeAdditionQueueN1 = this.shuffleDeck(this.additionDeckN1);
+    this.activeSubtractionQueueN1 = this.shuffleDeck(this.subtractionDeckN1);
+    this.activeMultiplicationQueueN1 = this.shuffleDeck(this.multiplicationDeckN1);
+    this.activeDivisionQueueN1 = this.shuffleDeck(this.divisionDeckN1);
+  }
+
   private shuffleDeck<T>(array: T[]): T[] {
     const copy = [...array];
     for (let i = copy.length - 1; i > 0; i--) {

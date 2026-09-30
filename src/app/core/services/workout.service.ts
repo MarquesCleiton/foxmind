@@ -112,6 +112,7 @@ export class WorkoutService {
   // Inicia o Treino Diário Geral (40 Questões • 10 por área)
   public async startDailyWorkout(): Promise<void> {
     await this.progression.init();
+    this.engine.resetMathDecks();
     this.activeMathDomain.set(null);
     this.isFocalWorkout.set(false);
     this.focalWorkoutConfig.set(null);
@@ -148,8 +149,9 @@ export class WorkoutService {
     this.saveActiveSessionToStorage();
   }
 
-  // Inicia Treino Focado em um Módulo de Matemática Mental (20 Questões)
+  // Inicia Treino Focado em um Módulo de Matemática Mental (45 ou 81 para N1, 20 para N2+)
   public startMathDomainWorkout(domain: MathDomain | 'MIXED'): void {
+    this.engine.resetMathDecks();
     this.activeMathDomain.set(domain);
     this.isFocalWorkout.set(false);
     this.focalWorkoutConfig.set(null);
@@ -165,7 +167,11 @@ export class WorkoutService {
     const profile = this.storage.profileSignal();
     this.currentDifficulty = profile.cognitiveScores.calculation || 40;
 
-    const count = 20;
+    // Nível 1 das operações básicas: conjunto exaustivo completo
+    let count = 20;
+    if (domain === 'ADDITION' || domain === 'MULTIPLICATION') count = 45;
+    else if (domain === 'SUBTRACTION' || domain === 'DIVISION') count = 81;
+
     const queue: ExerciseQuestion[] = [];
     this.sessionExerciseTypes = [];
     for (let i = 0; i < count; i++) {
@@ -182,9 +188,10 @@ export class WorkoutService {
     this.saveActiveSessionToStorage();
   }
 
-  // Inicia Treino Focal (Central de Treinos) — 20 questões por padrão (100% de foco)
+  // Inicia Treino Focal (Central de Treinos) — N1 das 4 operações: conjunto completo (45 ou 81); outros: 20 questões
   public async startFocalWorkout(config: FocalWorkoutConfig): Promise<void> {
     await this.progression.init();
+    this.engine.resetMathDecks();
     this.activeMathDomain.set(null);
     this.isFocalWorkout.set(true);
     this.focalWorkoutConfig.set(config);
@@ -198,7 +205,15 @@ export class WorkoutService {
     this.sessionStartTime = Date.now();
     this.currentDifficulty = 50;
 
-    const totalQ = config.questionCount ?? 20;
+    let totalQ = config.questionCount;
+    if (!totalQ) {
+      if (config.unitIds.length === 1) {
+        totalQ = this.progression.questionsForUnit(config.unitIds[0], config.level);
+      } else {
+        totalQ = 20;
+      }
+    }
+
     const plan = this.progression.buildFocalWorkoutPlan(config.unitIds, totalQ, config.level);
 
     this.sessionExerciseTypes = [];
@@ -289,7 +304,8 @@ export class WorkoutService {
       }
     }
 
-    // Registrar tentativa no IndexedDB
+    // Registrar tentativa na memória da sessão atual
+    // (IMPORTANTE: Nenhum dado é salvo no banco/progresso se o usuário desistir antes de concluir!)
     const attempt: ExerciseAttempt = {
       sessionId: this.sessionId,
       category: q.category,
@@ -303,30 +319,14 @@ export class WorkoutService {
       questionPrompt: q.prompt,
       explanationStrategy: q.explanationStrategy,
       isTimeout,
-      unitId: (q.unitId as FocusUnitId | undefined)
+      unitId: (q.unitId as FocusUnitId | undefined),
+      knowledgeId: q.knowledgeId,
+      mathDomain: q.mathDomain
     };
 
     this.sessionAttempts.push(attempt);
-    await this.storage.saveAttempt(attempt);
 
-    // Atualiza Domínio de Matemática Mental se a questão for de um fato matemático
-    if (q.knowledgeId && q.mathDomain) {
-      await this.mentalMath.recordAttempt(q.knowledgeId, q.mathDomain, isCorrect, responseTimeMs);
-    }
-
-    // Registrar tentativa no Motor de Progressão de Níveis 1-5
-    if (this.state() === 'EXERCISING') {
-      const unitId = (q.unitId ?? null) as FocusUnitId | null;
-      if (unitId) {
-        const result = await this.progression.recordAttempt(unitId, isCorrect, responseTimeMs);
-        if (result.levelUp) {
-          const current = this.levelUpEvents();
-          this.levelUpEvents.set([...current, { type: q.type, newLevel: result.newLevel }]);
-        }
-      }
-    }
-
-    // Se errou e ainda estamos no treino regular, guarda para a revisão final
+    // Se errou e ainda estamos no treino regular, guarda para a revisão final (em memória)
     if (!isCorrect && this.state() === 'EXERCISING') {
       const errItem: PendingReviewError = {
         sessionId: this.sessionId,
@@ -337,7 +337,6 @@ export class WorkoutService {
         createdAt: Date.now()
       };
       this.pendingErrors.push(errItem);
-      await this.storage.saveErrorForReview(errItem);
     }
 
     // Atualizar motor adaptativo (ajuste mais acolhedor em caso de dificuldade persistente)
@@ -479,6 +478,19 @@ export class WorkoutService {
       isImpulsive,
       sessionTag
     };
+
+    // 1. Salvar todas as tentativas e fatos matemáticos da sessão 100% concluída
+    for (const att of this.sessionAttempts) {
+      await this.storage.saveAttempt(att);
+      if (att.knowledgeId && att.mathDomain) {
+        await this.mentalMath.recordAttempt(att.knowledgeId, att.mathDomain, att.isCorrect, att.responseTimeMs);
+      }
+    }
+
+    // 2. Salvar erros para o banco de revisão
+    for (const err of this.pendingErrors) {
+      await this.storage.saveErrorForReview(err);
+    }
 
     await this.storage.recordSessionComplete(sessionData);
 
@@ -687,12 +699,18 @@ export class WorkoutService {
 
   public exitToHome(): void {
     this.clearSavedSession();
+    this.sessionId = '';
+    this.sessionAttempts = [];
+    this.pendingErrors = [];
+    this.questionsQueue = [];
     this.state.set('IDLE');
     this.currentQuestion.set(null);
     this.sessionResult.set(null);
     this.sessionDiagnostics.set(null);
     this.timeoutModalData.set(null);
     this.activeMathDomain.set(null);
+    this.isFocalWorkout.set(false);
+    this.focalWorkoutConfig.set(null);
   }
 
   // ==================== PERSISTÊNCIA & RECUPERAÇÃO APÓS REFRESH (Item 3) ====================
