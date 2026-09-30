@@ -289,7 +289,7 @@
                     <span class="domain-level-label">{{ domain.levelTitle }}</span>
                     <span class="dot-sep">•</span>
                     <span class="domain-stat-text">
-                      {{ domain.promotedCount }}/{{ domain.totalUnits }} promovidas (N2+)
+                      {{ domain.promotedCount }}/{{ domain.totalUnits }} promovidas
                     </span>
                     @if (domain.totalAttempts > 0) {
                       <span class="dot-sep">•</span>
@@ -300,19 +300,22 @@
               </div>
 
               <div class="domain-header-right">
-                <button
-                  class="btn-train-domain"
-                  (click)="openSessionModal(domain.session, $event)"
-                  title="Treinar todas as habilidades desta área">
-                  <span class="play-icon">▶</span> Treinar Domínio
-                </button>
-
                 <button class="btn-chevron" [class.expanded]="isSessionExpanded(domain.session.id)" aria-label="Expandir">
                   <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2.5">
                     <polyline points="6 9 12 15 18 9"></polyline>
                   </svg>
                 </button>
               </div>
+            </div>
+
+            <!-- Botão de Treino do Domínio (linha separada, abaixo do header) -->
+            <div class="domain-train-row">
+              <button
+                class="btn-train-domain"
+                (click)="openSessionModal(domain.session, $event)"
+                title="Treinar todas as habilidades desta área">
+                <span class="play-icon">▶</span> Treinar Domínio
+              </button>
             </div>
 
             <!-- Lista de Habilidades com Diagnóstico Detalhado -->

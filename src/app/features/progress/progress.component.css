@@ -8,7 +8,9 @@
   padding: 14px 12px 100px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* ── Loading State ── */
@@ -236,10 +238,14 @@
 }
 
 .marker-txt {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
+  max-width: 52px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
 }
 
 /* Métricas Resumidas */
@@ -752,20 +758,27 @@
 .domain-header-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
+/* Linha separada do botão de treino de domínio */
+.domain-train-row {
+  padding: 8px 14px 10px;
+  background: rgba(0, 0, 0, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .btn-train-domain {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(249, 115, 22, 0.15);
-  border: 1px solid rgba(249, 115, 22, 0.35);
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.18), rgba(249, 115, 22, 0.08));
+  border: 1px solid rgba(249, 115, 22, 0.4);
   color: var(--fox-primary);
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 0.72rem;
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -775,6 +788,7 @@
 .btn-train-domain:hover {
   background: var(--fox-primary);
   color: #fff;
+  box-shadow: 0 4px 14px var(--fox-glow);
 }
 
 .btn-train-domain .play-icon {
@@ -1400,5 +1414,114 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* ==================== MOBILE RESPONSIVENESS ==================== */
+@media (max-width: 480px) {
+  .progress-wrap {
+    padding: 10px 10px 96px;
+    gap: 12px;
+  }
+
+  .page-title {
+    font-size: 1.2rem;
+  }
+
+  /* Hero card compacto */
+  .overall-hero-card {
+    padding: 14px 12px;
+  }
+
+  .hero-top {
+    gap: 10px;
+  }
+
+  .hero-avatar {
+    width: 46px;
+    height: 46px;
+  }
+
+  .hero-rank-title {
+    font-size: 1.1rem;
+  }
+
+  .hero-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+  }
+
+  .stat-number {
+    font-size: 0.82rem;
+  }
+
+  .stat-caption {
+    font-size: 0.54rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60px;
+  }
+
+  /* Scale markers */
+  .scale-markers {
+    overflow: hidden;
+  }
+
+  .marker-txt {
+    font-size: 0.48rem;
+    max-width: 44px;
+  }
+
+  /* Domain card */
+  .domain-card-header {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .domain-icon {
+    font-size: 1.25rem;
+  }
+
+  .domain-name {
+    font-size: 0.9rem;
+  }
+
+  .domain-summary-row {
+    font-size: 0.66rem;
+  }
+
+  .domain-train-row {
+    padding: 6px 12px 8px;
+  }
+
+  /* Skill rows */
+  .skill-diagnostic-row {
+    padding: 8px 10px;
+  }
+
+  .skill-name {
+    font-size: 0.82rem;
+  }
+
+  .skill-row-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .btn-evolve-skill {
+    align-self: flex-end;
+  }
+
+  /* Filter tabs */
+  .seg-tab {
+    font-size: 0.68rem;
+    padding: 5px 9px;
+  }
+
+  /* Session records */
+  .session-record-card {
+    padding: 10px 12px;
   }
 }
