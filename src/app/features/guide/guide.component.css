@@ -6,10 +6,12 @@
 .guide-container {
   max-width: 680px;
   margin: 0 auto;
-  padding: 16px 16px 96px 16px;
+  padding: 12px 14px 90px 14px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* ==================== HEADER ==================== */
@@ -54,7 +56,7 @@
 }
 
 .guide-main-title {
-  font-size: 1.45rem;
+  font-size: 1.2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #ffffff;
@@ -62,9 +64,13 @@
 }
 
 .guide-lead-text {
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
-  line-height: 1.45;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ==================== BARRA DE BUSCA ==================== */
@@ -337,11 +343,14 @@
 .topic-identity {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .topic-icon {
-  font-size: 1.45rem;
+  font-size: 1.3rem;
   flex-shrink: 0;
   line-height: 1;
 }
@@ -349,37 +358,62 @@
 .topic-title-box {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .topic-title {
-  font-size: 1.05rem;
+  font-size: 0.97rem;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.01em;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.topic-meta-row {
+/* Apenas categoria visível no header colapsado */
+.category-meta-tag {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Row de badges visíveis apenas quando expandido */
+.expanded-badges-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  font-size: 0.72rem;
+}
+
+.level-pill {
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
-.category-meta-tag {
-  color: var(--text-secondary);
-  font-weight: 600;
+.questions-pill {
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  background: var(--fox-surface);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+  border-radius: var(--radius-full);
+  color: var(--fox-light);
+  white-space: nowrap;
 }
 
-.meta-dot {
-  opacity: 0.5;
-}
-
-.level-meta-tag {
-  color: var(--text-muted);
-}
 
 /* ==================== BADGES COMPACTOS (PADRÃO DA IMAGEM) ==================== */
 .badge-compact {
@@ -826,25 +860,54 @@
 /* ==================== RESPONSIVIDADE ==================== */
 @media (max-width: 480px) {
   .guide-container {
-    padding: 12px 12px 90px 12px;
+    padding: 10px 12px 88px 12px;
+    gap: 12px;
   }
 
   .guide-main-title {
-    font-size: 1.25rem;
+    font-size: 1.05rem;
+  }
+
+  .guide-mascot-badge {
+    width: 40px;
+    height: 40px;
+    font-size: 1.4rem;
+  }
+
+  .topic-card {
+    padding: 12px;
   }
 
   .example-flow {
-    padding: 6px 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px;
   }
 
-  .demo-pill {
-    min-width: 24px;
-    height: 24px;
-    font-size: 0.8rem;
-    padding: 0 4px;
+  .example-step {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 8px;
   }
 
   .example-arrow {
+    align-self: center;
+    font-size: 0.65rem;
+  }
+
+  .demo-pill {
+    min-width: 26px;
+    height: 26px;
+    font-size: 0.82rem;
+  }
+
+  .filter-pill {
+    padding: 5px 10px;
+    font-size: 0.74rem;
+  }
+
+  .guide-eyebrow {
     font-size: 0.62rem;
   }
 }

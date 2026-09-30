@@ -87,23 +87,16 @@
     @for (topic of filteredTopics(); track topic.id) {
       <article class="topic-card card animate-pop-in" [attr.data-cat]="topic.category" [class.is-expanded]="isExpanded(topic.id)">
         
-        <!-- Topo do Card: Clicável — Ícone, Título, Badge e Seta -->
+        <!-- Topo do Card: Clicável — Ícone, Título, Categoria e Seta -->
         <div class="topic-header-row topic-header-clickable" (click)="toggleExpand(topic.id)">
           <div class="topic-identity">
             <span class="topic-icon">{{ topic.icon }}</span>
             <div class="topic-title-box">
               <h2 class="topic-title">{{ topic.title }}</h2>
-              <div class="topic-meta-row">
-                <span class="category-meta-tag">{{ topic.categoryLabel }}</span>
-                <span class="meta-dot">•</span>
-                <span class="level-meta-tag">{{ topic.levelRange }}</span>
-              </div>
+              <span class="category-meta-tag">{{ topic.categoryLabel }}</span>
             </div>
           </div>
           <div class="header-right-cluster">
-            <span class="badge-compact" [ngClass]="topic.badgeClass">
-              {{ topic.badgeLabel }}
-            </span>
             <span class="card-chevron" [class.open]="isExpanded(topic.id)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="6 9 12 15 18 9"/>
@@ -114,7 +107,13 @@
 
         <!-- ======= CONTEÚDO EXPANSÍVEL (oculto por padrão) ======= -->
         @if (isExpanded(topic.id)) {
-          <!-- Enunciado e Regra Principal -->
+          <!-- Badge de Tipo e Nível no topo do conteúdo expandido -->
+          <div class="expanded-badges-row animate-fade-in">
+            <span class="badge-compact" [ngClass]="topic.badgeClass">{{ topic.badgeLabel }}</span>
+            <span class="level-pill">{{ topic.levelRange }}</span>
+            <span class="questions-pill">{{ topic.defaultQuestionsText }}</span>
+          </div>
+
           <div class="topic-rule-box animate-fade-in">
             <p class="rule-description">
               {{ topic.ruleText }} 
@@ -126,7 +125,6 @@
           <div class="pre-start-example-box animate-fade-in">
             <div class="example-header">
               <span class="example-label">EXEMPLO DE RESPOSTA:</span>
-              <span class="example-mode-badge">{{ topic.defaultQuestionsText }}</span>
             </div>
 
             <!-- Fluxo Visual: Você Vê ➔ Transformação ➔ Você Responde -->
