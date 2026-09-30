@@ -11,12 +11,16 @@
 
       <div class="warmup-info-pills">
         <span class="badge badge-fox">⏱ {{ workout.selectedMinutes() }} minutos</span>
-        @if (workout.activeMathDomain(); as dom) {
+        @if (workout.isFocalWorkout()) {
+          <span class="badge badge-calc">{{ focalTitle() }}</span>
+          <span class="badge badge-att">⭐ Progressão 1 a 5</span>
+        } @else if (workout.activeMathDomain(); as dom) {
           <span class="badge badge-calc">🧮 {{ getMathDomainLabel(dom) }}</span>
+          <span class="badge badge-att">⚡ Dificuldade Adaptativa</span>
         } @else {
           <span class="badge badge-calc">🧠 4 Habilidades</span>
+          <span class="badge badge-att">⚡ Dificuldade Adaptativa</span>
         }
-        <span class="badge badge-att">⚡ Dificuldade Adaptativa</span>
       </div>
 
       <div class="warmup-actions">
@@ -52,6 +56,12 @@
         }
       </div>
     </header>
+
+    @if (currentUnitIndicator(); as indicator) {
+      <div class="unit-indicator-bar animate-fade-in">
+        <span class="unit-indicator-pill">{{ indicator }}</span>
+      </div>
+    }
 
     <!-- Feedback Imediato Flutuante (sem interromper) -->
     @if (workout.feedback(); as fb) {
@@ -155,112 +165,105 @@
   <!-- ==================== ESTADO 4: RESUMO & RESULTADOS ==================== -->
   @if (workout.state() === 'SUMMARY') {
     <div class="summary-container animate-fade-in">
-      <div class="summary-fox-header">
-        <img src="fox-mascot.png" alt="FoxMind" class="summary-fox-img" />
-        <div class="fox-speech-bubble animate-pop-in">
-          <h2>{{ workout.sessionDiagnostics()?.speechTitle || 'Treino Concluído!' }}</h2>
-          <p>{{ workout.sessionDiagnostics()?.speechMessage }}</p>
+      <!-- Header Compacto com Mascote e Título Assertivo -->
+      <div class="summary-hero-compact">
+        <img src="fox-mascot.png" alt="FoxMind" class="summary-fox-avatar" />
+        <div class="summary-hero-text">
+          <div class="summary-badge-status">Treino Concluído</div>
+          <h2 class="summary-title">{{ workout.sessionDiagnostics()?.speechTitle || 'Sessão Finalizada' }}</h2>
+          <p class="summary-subtitle">{{ workout.sessionDiagnostics()?.speechMessage }}</p>
         </div>
       </div>
 
-      <!-- Alerta de Ritmo Impulsivo (quando o usuário chuta sem ler) -->
+      <!-- Alerta de Ritmo Impulsivo (se houver) -->
       @if (workout.sessionDiagnostics()?.isImpulsive) {
-        <div class="impulsive-alert-card animate-pop-in">
+        <div class="impulsive-alert-compact animate-pop-in">
           <span class="impulsive-icon">⚡</span>
-          <div class="impulsive-content">
-            <strong>Ritmo Excessivamente Rápido ({{ ((workout.sessionResult()?.averageResponseTimeMs || 0) / 1000).toFixed(1) }}s)</strong>
-            <p>Exercícios de raciocínio e cálculo mental exigem leitura e tempo de processamento. Concentre-se na precisão antes da velocidade.</p>
-          </div>
+          <span><strong>Ritmo Muito Rápido ({{ ((workout.sessionResult()?.averageResponseTimeMs || 0) / 1000).toFixed(1) }}s):</strong> Priorize a precisão antes da velocidade.</span>
         </div>
       }
 
-      <!-- Métricas Centrais -->
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <span class="metric-label">Precisão</span>
-          <span class="metric-value" [ngClass]="workout.sessionDiagnostics()?.accuracyClass || 'acc-high'">
+      <!-- Faixa de Métricas (4 colunas elegantes e compactas) -->
+      <div class="metrics-strip">
+        <div class="metric-cell">
+          <span class="metric-cell-label">Precisão</span>
+          <span class="metric-cell-value" [ngClass]="workout.sessionDiagnostics()?.accuracyClass || 'acc-high'">
             {{ workout.sessionResult()?.accuracyPercentage }}%
           </span>
         </div>
-        <div class="metric-card">
-          <span class="metric-label">Tempo Médio</span>
-          <span class="metric-value">{{ ((workout.sessionResult()?.averageResponseTimeMs || 0) / 1000).toFixed(1) }}s</span>
+        <div class="metric-cell">
+          <span class="metric-cell-label">Tempo Médio</span>
+          <span class="metric-cell-value">{{ ((workout.sessionResult()?.averageResponseTimeMs || 0) / 1000).toFixed(1) }}s</span>
         </div>
-        <div class="metric-card">
-          <span class="metric-label">Experiência</span>
-          <span class="metric-value text-amber">+{{ workout.sessionResult()?.xpEarned }} XP</span>
+        <div class="metric-cell">
+          <span class="metric-cell-label">XP Ganho</span>
+          <span class="metric-cell-value text-amber">+{{ workout.sessionResult()?.xpEarned }}</span>
         </div>
-        <div class="metric-card">
-          <span class="metric-label">Duração</span>
-          <span class="metric-value font-compact">
+        <div class="metric-cell">
+          <span class="metric-cell-label">Duração</span>
+          <span class="metric-cell-value font-compact">
             {{ workout.sessionDiagnostics()?.formattedDuration || (workout.sessionResult()?.totalDurationSeconds + 's') }}
           </span>
         </div>
       </div>
 
-      <!-- Diagnóstico da Raposa: O que foi bem & Onde focar para melhorar -->
+      <!-- Diagnóstico Assertivo Unificado -->
       @if (workout.sessionDiagnostics(); as diag) {
-        <section class="diagnostic-section">
-          <!-- Onde se destacou (Apenas se houver pontos fortes legítimos) -->
-          @if (diag.strengths.length > 0) {
-            <div class="diagnostic-card card card-strengths">
-              <div class="diag-header">
-                <span class="diag-icon">🌟</span>
-                <h3>Onde você se destacou</h3>
-              </div>
-              <ul class="diag-list">
-                @for (item of diag.strengths; track item.title) {
-                  <li class="diag-item">
-                    <span class="diag-bullet">{{ item.icon }}</span>
-                    <div class="diag-content">
-                      <strong>{{ item.title }}</strong>
-                      <p>{{ item.detail }}</p>
+        @if (diag.strengths.length > 0 || diag.improvements.length > 0 || diag.honestNotice) {
+          <div class="summary-diag-compact">
+            @if (diag.strengths.length > 0) {
+              <div class="diag-group strength-group">
+                <div class="diag-group-header">
+                  <span class="diag-group-icon">🌟</span>
+                  <strong>Destaques Positivos</strong>
+                </div>
+                <div class="diag-chips">
+                  @for (item of diag.strengths; track item.title) {
+                    <div class="diag-chip strength-chip" [title]="item.detail">
+                      <span class="chip-dot">✓</span>
+                      <span class="chip-title">{{ item.title }}</span>
+                      <span class="chip-detail">{{ item.detail }}</span>
                     </div>
-                  </li>
-                }
-              </ul>
-            </div>
-          } @else if (diag.honestNotice) {
-            <!-- Aviso honesto e construtivo em vez de elogio falso -->
-            <div class="diagnostic-card card card-notice">
-              <div class="diag-header">
-                <span class="diag-icon">💡</span>
-                <h3>Atenção ao Ritmo e Precisão</h3>
+                  }
+                </div>
               </div>
-              <p class="diag-notice-text">{{ diag.honestNotice }}</p>
-            </div>
-          }
+            }
 
-          <!-- Onde melhorar -->
-          @if (diag.improvements.length > 0) {
-            <div class="diagnostic-card card card-improvements">
-              <div class="diag-header">
-                <span class="diag-icon">🎯</span>
-                <h3>Onde focar para evoluir</h3>
+            @if (diag.honestNotice && diag.strengths.length === 0) {
+              <div class="diag-notice-compact">
+                <span class="notice-icon">💡</span>
+                <span>{{ diag.honestNotice }}</span>
               </div>
-              <ul class="diag-list">
-                @for (item of diag.improvements; track item.title) {
-                  <li class="diag-item">
-                    <span class="diag-bullet">{{ item.icon }}</span>
-                    <div class="diag-content">
-                      <strong>{{ item.title }}</strong>
-                      <p>{{ item.detail }}</p>
+            }
+
+            @if (diag.improvements.length > 0) {
+              <div class="diag-group improve-group">
+                <div class="diag-group-header">
+                  <span class="diag-group-icon">🎯</span>
+                  <strong>Oportunidades de Evolução</strong>
+                </div>
+                <div class="diag-chips">
+                  @for (item of diag.improvements; track item.title) {
+                    <div class="diag-chip improve-chip" [title]="item.detail">
+                      <span class="chip-dot">→</span>
+                      <span class="chip-title">{{ item.title }}</span>
+                      <span class="chip-detail">{{ item.detail }}</span>
                     </div>
-                  </li>
-                }
-              </ul>
-            </div>
-          }
-        </section>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
       }
 
-      <!-- Ações Finais -->
-      <div class="summary-actions">
-        <button class="btn-primary finish-btn" (click)="exitWorkout()">
+      <!-- Ações Finais Lado a Lado -->
+      <div class="summary-actions-compact">
+        <button class="btn-primary summary-action-btn" (click)="exitWorkout()">
           Voltar ao Início
         </button>
-        <button class="btn-secondary" (click)="startAnotherSession()">
-          Treinar Mais (Opcional)
+        <button class="btn-secondary summary-action-btn" (click)="startAnotherSession()">
+          Treinar Novamente
         </button>
       </div>
     </div>

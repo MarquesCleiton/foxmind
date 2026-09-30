@@ -14,6 +14,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/progress/progress.component').then(m => m.ProgressComponent)
   },
   {
+    path: 'focus',
+    loadComponent: () => import('./features/focus/focus.component').then(m => m.FocusComponent)
+  },
+  {
     path: 'profile',
     loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent)
   },

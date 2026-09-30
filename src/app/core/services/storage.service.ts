@@ -6,7 +6,9 @@ import {
   ExerciseAttempt, 
   PersonalRecord, 
   PendingReviewError,
-  CognitiveCategory
+  CognitiveCategory,
+  TestProgressionState,
+  FocusUnitId
 } from '../models/cognitive.models';
 import { 
   MathKnowledgeItem, 
@@ -21,6 +23,7 @@ export class FoxMindDatabase extends Dexie {
   records!: Table<PersonalRecord, string>;
   errorBank!: Table<PendingReviewError, number>;
   mathMastery!: Table<MathKnowledgeItem, string>;
+  testProgression!: Table<TestProgressionState, string>;
 
   constructor() {
     super('FoxMindDB');
@@ -33,6 +36,17 @@ export class FoxMindDatabase extends Dexie {
     });
     this.version(2).stores({
       mathMastery: 'knowledgeId, domain, familyId, masteryLevel, lastReviewedAt'
+    });
+    // v3: chave era 'type' — substituída na v4 por 'unitId' (granularidade de unidades de foco)
+    this.version(3).stores({
+      testProgression: 'type, currentLevel, lastTrainedAt, accuracyPercentage'
+    });
+    // v4: chave primária correta = 'unitId' (FocusUnitId — 19 unidades granulares)
+    this.version(4).stores({
+      testProgression: 'unitId, currentLevel, lastTrainedAt, accuracyPercentage'
+    }).upgrade(tx => {
+      // Limpa registros antigos com chave 'type' — serão recriados na próxima inicialização
+      return tx.table('testProgression').clear();
     });
   }
 }
@@ -351,7 +365,21 @@ export class StorageService {
     await this.db.records.clear();
     await this.db.errorBank.clear();
     await this.db.mathMastery.clear();
+    await this.db.testProgression.clear();
     await this.db.profile.put(DEFAULT_PROFILE);
     this.profileSignal.set(DEFAULT_PROFILE);
+  }
+
+  // ==================== PROGRESSÃO DE TESTES (Níveis 1 a 5 por Unidade de Foco) ====================
+  public async getAllTestProgressions(): Promise<TestProgressionState[]> {
+    return await this.db.testProgression.toArray();
+  }
+
+  public async getTestProgression(unitId: FocusUnitId): Promise<TestProgressionState | undefined> {
+    return await this.db.testProgression.get(unitId);
+  }
+
+  public async saveTestProgression(state: TestProgressionState): Promise<void> {
+    await this.db.testProgression.put(state);
   }
 }

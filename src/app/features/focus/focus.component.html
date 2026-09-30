@@ -1,0 +1,272 @@
+<div class="focus-wrap">
+
+  <!-- ── LOADING ───────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <div class="focus-loading">
+      <div class="spinner-main"></div>
+      <p>Carregando perfil cognitivo e habilidades...</p>
+    </div>
+  }
+
+  @if (!isLoading()) {
+
+    <!-- ── COMPACT HEADER ────────────────────────────────────────── -->
+    <header class="focus-header">
+      <div class="header-main-row">
+        <button class="btn-back" (click)="goHome()" title="Voltar ao Início">←</button>
+        <div class="header-titles">
+          <h1 class="page-title">Centro de Foco</h1>
+          <p class="page-subtitle">Escolha uma habilidade e defina seu tempo de desafio.</p>
+        </div>
+      </div>
+
+      <!-- Mini Perfil Geral Compacto -->
+      <div class="overall-mini-pill">
+        <span class="mini-rank-emoji">{{ overallProgression().overallRankBadge }}</span>
+        <span class="mini-rank-name">{{ overallProgression().overallRankTitle }}</span>
+        <span class="mini-rank-sep">•</span>
+        <span class="mini-rank-level">{{ progression.getLevelFullLabel(overallProgression().overallLevel) }}</span>
+        @if (overallProgression().testsInDecayRisk.length > 0) {
+          <span class="mini-decay-chip" title="Habilidades com risco de decaimento por inatividade">
+            ⚠️ {{ overallProgression().testsInDecayRisk.length }} expirando
+          </span>
+        }
+      </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         LISTAGEM DE SESSÕES EXPANSÍVEIS COM HEADER ELEGANTE
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="sessions-container">
+      @for (item of sessions(); track item.session.id) {
+        <section
+          class="session-section"
+          [class.is-expanded]="isSessionExpanded(item.session.id)"
+          [id]="'session-' + item.session.id">
+
+          <!-- HEADER ELEGANTE DA SESSÃO COM INFORMAÇÕES RESUMIDAS -->
+          <div
+            class="session-sticky-header"
+            (click)="toggleSession(item.session.id)">
+
+            <div class="header-main-flex">
+              <span class="session-icon">{{ item.session.icon }}</span>
+
+              <div class="session-info-col">
+                <div class="session-title-row">
+                  <h2 class="session-name">{{ item.session.name }}</h2>
+                  <span class="unit-count-chip">{{ item.units.length }} testes</span>
+                </div>
+
+                <div class="session-summary-pills">
+                  <span class="session-tier-tag">{{ item.levelTitle }}</span>
+                  <span class="dot-sep">•</span>
+                  @if (item.trainedCount > 0) {
+                    <span class="session-acc-tag">{{ item.averageAccuracy }}% precisão recente</span>
+                  } @else {
+                    <span class="session-acc-tag text-muted">Ainda não iniciado</span>
+                  }
+                </div>
+              </div>
+
+              <div class="header-actions">
+                <button
+                  class="btn-train-session-header"
+                  (click)="openSessionModal(item.session, $event)"
+                  title="Treinar todas as habilidades desta sessão">
+                  <span class="play-icon">▶</span>
+                  <span class="btn-txt">Sessão</span>
+                </button>
+
+                <button
+                  class="btn-chevron"
+                  [class.expanded]="isSessionExpanded(item.session.id)"
+                  aria-label="Alternar exibição">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2.5">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- CORPO DA SESSÃO: UNIDADES COMPACTAS -->
+          @if (isSessionExpanded(item.session.id)) {
+            <div class="units-compact-list animate-slide-down">
+              @for (unit of item.units; track unit.meta.unitId) {
+                <div
+                  class="unit-compact-row"
+                  [class.is-bottleneck]="unit.isBottleneck"
+                  [class.is-peak]="unit.isPeak"
+                  [class.is-decay]="unit.isDecayWarning"
+                  (click)="openUnitModal(unit.meta)">
+
+                  <!-- Linha 1: Ícone + Título + Badges + Nível Elegante -->
+                  <div class="row-top">
+                    <div class="row-title-wrap">
+                      <span class="unit-symbol">{{ unit.meta.icon }}</span>
+                      <strong class="unit-name">{{ unit.meta.name }}</strong>
+
+                      @if (unit.isBottleneck) {
+                        <span class="unit-badge badge-bottleneck" title="Esta habilidade é o seu gargalo atual">Gargalo</span>
+                      }
+                      @if (unit.isPeak) {
+                        <span class="unit-badge badge-peak" title="Maior domínio cognitivo">Destaque</span>
+                      }
+                      @if (unit.isDecayWarning) {
+                        <span class="unit-badge badge-decay" title="Inatividade próxima do limite">Expirando</span>
+                      }
+                    </div>
+
+                    <!-- Badge do Nível com Título Completo -->
+                    <div class="row-level-badge" [class.lvl-master]="unit.state.currentLevel === 5">
+                      <span class="row-lvl-text">{{ unit.levelTitle }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Descrição sucinta (1 linha compacta) -->
+                  <p class="unit-summary">{{ unit.meta.description }}</p>
+
+                  <!-- Linha 2: Barra de Progresso Fina Rumo ao Próximo Nível -->
+                  <div class="row-progress-bar">
+                    <div
+                      class="row-progress-fill"
+                      [style.width.%]="unit.state.currentLevel === 5 ? 100 : (unit.accuracy / 95) * 100"
+                      [class.fill-promote]="unit.accuracy >= 95"
+                      [class.fill-danger]="unit.accuracy < 50 && unit.attemptsCount >= 10">
+                    </div>
+                    <div class="row-progress-target-line" title="Meta 95% para promoção"></div>
+                  </div>
+
+                  <!-- Linha 3: Métricas & Botão Desafiar -->
+                  <div class="row-bottom">
+                    <div class="row-stats">
+                      @if (unit.attemptsCount > 0) {
+                        <span class="stat-accuracy">{{ unit.accuracy }}% acerto</span>
+                        <span class="stat-dot">•</span>
+                        <span class="stat-attempts">{{ unit.attemptsCount }}/20 testes</span>
+                      } @else {
+                        <span class="stat-new">Novo • Nível 1 Base</span>
+                      }
+
+                      @if (unit.shieldLabel) {
+                        <span class="shield-chip" [ngClass]="unit.shieldClass">{{ unit.shieldLabel }}</span>
+                      }
+                    </div>
+
+                    <button
+                      class="btn-challenge-action"
+                      (click)="openUnitModal(unit.meta, $event)">
+                      Desafiar →
+                    </button>
+                  </div>
+
+                </div>
+              }
+            </div>
+          }
+
+        </section>
+      }
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL DE ESCOLHA DE TEMPO E INÍCIO DO DESAFIO
+         ═══════════════════════════════════════════════════════════ -->
+    @if (modalTarget(); as target) {
+      <div class="modal-backdrop" (click)="closeModal()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+
+          <!-- Cabeçalho do Modal -->
+          <div class="modal-header">
+            <div class="modal-target-info">
+              <span class="modal-icon">
+                {{ target.type === 'unit' ? target.meta?.icon : target.session?.icon }}
+              </span>
+              <div>
+                <h3 class="modal-title">
+                  {{ target.type === 'unit' ? target.meta?.name : target.session?.name }}
+                </h3>
+                <span class="modal-subtitle">
+                  @if (target.type === 'unit') {
+                    Nível {{ target.level }} • {{ target.meta?.description }}
+                  } @else {
+                    Sessão Completa • Nível Médio N{{ target.level }}
+                  }
+                </span>
+              </div>
+            </div>
+            <button class="btn-close-modal" (click)="closeModal()" aria-label="Fechar">✕</button>
+          </div>
+
+          <!-- Informações de Meta e Recompensa -->
+          <div class="modal-goal-banner">
+            @if (target.type === 'unit') {
+              @if (target.level < 5) {
+                <span class="goal-icon">🎯</span>
+                <span class="goal-text">
+                  Meta para subir para o <strong>Nível {{ target.level + 1 }}</strong>: atingir <strong>95% de acertos</strong> em 20 questões.
+                </span>
+              } @else {
+                <span class="goal-icon">⭐</span>
+                <span class="goal-text">
+                  Você está no <strong>Nível 5 Máximo (Mestre)</strong>. Treine para manter seu escudo ativo contra o decaimento!
+                </span>
+              }
+            } @else {
+              <span class="goal-icon">⚡</span>
+              <span class="goal-text">
+                Você treinará todas as {{ target.session?.unitIds?.length }} habilidades desta sessão em rotação contínua.
+              </span>
+            }
+          </div>
+
+          <!-- Seletor de Tempo de Desafio -->
+          <div class="duration-section">
+            <label class="duration-label">Escolha o tempo de desafio:</label>
+
+            <div class="duration-grid">
+              @for (opt of DURATION_OPTIONS; track opt.minutes) {
+                <button
+                  type="button"
+                  class="duration-pill-card"
+                  [class.active]="selectedDuration() === opt.minutes"
+                  [class.recommended]="opt.isRecommended"
+                  (click)="selectDuration(opt.minutes)">
+
+                  @if (opt.isRecommended) {
+                    <span class="rec-badge">Recomendado</span>
+                  }
+
+                  <div class="dur-main">
+                    <span class="dur-time">{{ opt.label }}</span>
+                    <span class="dur-questions">{{ opt.questions }} questões</span>
+                  </div>
+                  <span class="dur-sub">{{ opt.sublabel }}</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Botão Principal de Iniciar -->
+          <div class="modal-actions">
+            <button
+              class="btn-start-challenge"
+              (click)="startModalWorkout()"
+              [disabled]="isStarting()">
+              @if (isStarting()) {
+                <span class="spin-sm"></span> Preparando treino...
+              } @else {
+                <span>▶ Iniciar Desafio ({{ selectedDuration() }} min)</span>
+              }
+            </button>
+          </div>
+
+        </div>
+      </div>
+    }
+
+  }
+
+</div>

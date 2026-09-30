@@ -40,10 +40,10 @@
     </div>
   }
 
-  <!-- ==================== 1. RESUMO SUPERIOR DE PROGRESSO (Item 1) ==================== -->
+  <!-- ==================== 1. RESUMO SUPERIOR DE PROGRESSO ==================== -->
   <section class="stats-overview">
     <div class="stat-mini-card card">
-      <span class="stat-mini-label">Nível</span>
+      <span class="stat-mini-label">Nível Geral</span>
       <span class="stat-mini-val">Lvl {{ storage.profileSignal().level }}</span>
     </div>
     <div class="stat-mini-card card">
@@ -56,10 +56,10 @@
     </div>
   </section>
 
-  <!-- ==================== 2. ESCOLHA DE TEMPO DO TREINO (Item 1) ==================== -->
+  <!-- ==================== 2. ESCOLHA DE TEMPO DO TREINO ==================== -->
   <section class="quick-modes">
     <div class="section-heading">
-      <span class="section-label">⏱ Duração do Treino:</span>
+      <span class="section-label">⏱ Duração do Treino Diário:</span>
     </div>
     <div class="modes-grid">
       <button 
@@ -99,7 +99,7 @@
         </div>
       </div>
       <h2 class="workout-title">Seu Treino de Hoje</h2>
-      <p class="workout-subtitle-clean">Sessão calibrada de {{ currentMinutes() }} min para acelerar foco e agilidade mental.</p>
+      <p class="workout-subtitle-clean">Sessão equilibrada de {{ currentMinutes() }} min para acelerar foco, memória e agilidade mental.</p>
     </div>
 
     <!-- Grade Elegante de Habilidades -->
@@ -142,77 +142,8 @@
     </div>
 
     <button class="btn-primary start-workout-btn" (click)="startWorkout()">
-      Começar Treino
+      Começar Treino Diário
     </button>
-  </section>
-
-  <!-- ==================== 4. MÓDULOS DE MATEMÁTICA MENTAL ==================== -->
-  <section class="math-modules-section">
-    <div class="math-section-header">
-      <div class="math-title-wrap">
-        <span class="math-section-icon">🧮</span>
-        <div>
-          <h3 class="math-section-title">Matemática Mental</h3>
-          <p class="math-section-desc">Automatize contas e estratégias com treino adaptativo focado.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="math-modules-grid">
-      <!-- ➕ Adição -->
-      <button class="math-module-card card" (click)="startMathWorkout('ADDITION')">
-        <div class="module-icon-box add-gradient">➕</div>
-        <div class="module-info">
-          <span class="module-title">Adição</span>
-          <span class="module-meta">45 combinações</span>
-        </div>
-      </button>
-
-      <!-- ➖ Subtração -->
-      <button class="math-module-card card" (click)="startMathWorkout('SUBTRACTION')">
-        <div class="module-icon-box sub-gradient">➖</div>
-        <div class="module-info">
-          <span class="module-title">Subtração</span>
-          <span class="module-meta">Positivos e 10</span>
-        </div>
-      </button>
-
-      <!-- ✖️ Multiplicação -->
-      <button class="math-module-card card" (click)="startMathWorkout('MULTIPLICATION')">
-        <div class="module-icon-box mult-gradient">✖️</div>
-        <div class="module-info">
-          <span class="module-title">Multiplicação</span>
-          <span class="module-meta">Tabuadas de 2 a 9</span>
-        </div>
-      </button>
-
-      <!-- ➗ Divisão -->
-      <button class="math-module-card card" (click)="startMathWorkout('DIVISION')">
-        <div class="module-icon-box div-gradient">➗</div>
-        <div class="module-info">
-          <span class="module-title">Divisão</span>
-          <span class="module-meta">Convenientes e restos</span>
-        </div>
-      </button>
-
-      <!-- % Porcentagem -->
-      <button class="math-module-card card" (click)="startMathWorkout('PERCENTAGE')">
-        <div class="module-icon-box pct-gradient">%</div>
-        <div class="module-info">
-          <span class="module-title">Porcentagem</span>
-          <span class="module-meta">Decomposição e reversa</span>
-        </div>
-      </button>
-
-      <!-- ⚡ Desafio Misto -->
-      <button class="math-module-card card card-mixed" (click)="startMathWorkout('MIXED')">
-        <div class="module-icon-box mixed-gradient">⚡</div>
-        <div class="module-info">
-          <span class="module-title">Desafio Misto</span>
-          <span class="module-meta">5 operações aleatórias</span>
-        </div>
-      </button>
-    </div>
   </section>
 
   <!-- Modal com Guia de Instalação para iPhone / iOS Safari -->

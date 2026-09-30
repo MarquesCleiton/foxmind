@@ -24,7 +24,10 @@ export interface ExerciseQuestion {
   id: string;
   category: CognitiveCategory;
   type: ExerciseType;
-  difficulty: number; // 1 a 100
+  difficulty: number; // 1 a 100 (retrocompatibilidade)
+  level?: ExerciseLevel; // Nível 1 a 5
+  unitId?: FocusUnitId;  // Unidade de foco granular
+  subtype?: string;      // Sub-tipo dentro do exercício (ex: 'FORWARD', 'INK', 'ARITHMETIC')
   prompt: string;
   data: any;
   options?: any[];
@@ -113,4 +116,77 @@ export interface PendingReviewError {
   reviewAttempts: number;
   resolved: boolean;
   createdAt: number;
+}
+
+export type ExerciseLevel = 1 | 2 | 3 | 4 | 5;
+
+// ── Identificadores granulares das 19 Unidades de Foco ───────────────────────
+export type FocusUnitId =
+  // Sessão: Cálculo (6 unidades)
+  | 'math-addition'        // Adição
+  | 'math-subtraction'     // Subtração
+  | 'math-multiplication'  // Multiplicação
+  | 'math-division'        // Divisão
+  | 'pct-basic'            // Porcentagem Básica (10%, 25%, 50%)
+  | 'pct-applied'          // Porcentagem Aplicada (desconto, aumento, reverso)
+  // Sessão: Memória (4 unidades)
+  | 'seq-forward'          // Sequência Numérica Direta
+  | 'seq-reverse'          // Sequência Numérica Inversa
+  | 'spatial-grid'         // Memória Espacial em Grade
+  | 'genius-colors'        // Genius / Cores Sequenciais
+  // Sessão: Atenção & Reação (5 unidades)
+  | 'att-match'            // Atenção: Identificação Positiva
+  | 'att-negate'           // Atenção: Identificação Negativa ("NÃO é")
+  | 'stroop-ink'           // Stroop: Foco na Cor da Tinta
+  | 'stroop-word'          // Stroop: Foco na Palavra Escrita
+  | 'number-ordering'      // Ordenação Numérica
+  // Sessão: Raciocínio Lógico (4 unidades)
+  | 'pat-arithmetic'       // Padrão Aritmético (+n, -n)
+  | 'pat-geometric'        // Padrão Geométrico (×n, sequência geométrica)
+  | 'pat-complex'          // Padrão Complexo (Fibonacci, intercaladas)
+  | 'word-problem';        // Problemas Contextuais (velocidade, proporção, estimativa)
+
+export interface TestAttemptRecord {
+  isCorrect: boolean;
+  timestamp: number;
+  responseTimeMs: number;
+}
+
+export interface TestProgressionState {
+  unitId: FocusUnitId;
+  currentLevel: ExerciseLevel;
+  recentAttempts: TestAttemptRecord[]; // últimas até 20 tentativas no nível atual
+  totalAttemptsAtLevel: number;
+  correctCountAtLevel: number;
+  accuracyPercentage: number; // 0 a 100
+  lastTrainedAt: number;      // timestamp da última tentativa desta unidade
+  promotedAt?: number;
+  gracePeriodAttemptsLeft: number; // 10 tentativas de adaptação ao subir de nível
+}
+
+// ── Sessão de Foco (agrupa unidades relacionadas) ────────────────────────────
+export interface FocusSession {
+  id: string;           // ex: 'calculo', 'memoria'
+  name: string;         // ex: 'Cálculo'
+  icon: string;         // ex: '🔢'
+  description: string;
+  unitIds: FocusUnitId[];
+  color: string;        // cor temática para o card
+}
+
+export interface PlayerOverallProgression {
+  overallLevel: number; // ex: 3.4
+  overallRankTitle: string; // ex: "Raposa Estratégista"
+  overallRankBadge: string; // ex: "🦊⚡"
+  bottleneckUnitId: FocusUnitId | null;
+  peakUnitId: FocusUnitId | null;
+  testsInDecayRisk: FocusUnitId[];
+  unitsSummary: TestProgressionState[];
+}
+
+export interface FocalWorkoutConfig {
+  unitIds: FocusUnitId[];       // 1 unit = foco; vários = sessão
+  sessionId?: string;           // ID da sessão pai (se vier de uma sessão)
+  durationMinutes: 2 | 5 | 10;
+  level?: ExerciseLevel;        // Força nível específico (null = usa o atual de cada unidade)
 }

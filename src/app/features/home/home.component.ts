@@ -40,9 +40,4 @@ export class HomeComponent {
     this.workout.startDailyWorkout(mins);
     this.router.navigate(['/workout']);
   }
-
-  public startMathWorkout(domain: 'ADDITION' | 'SUBTRACTION' | 'MULTIPLICATION' | 'DIVISION' | 'PERCENTAGE' | 'MIXED'): void {
-    this.workout.startMathDomainWorkout(domain, 3);
-    this.router.navigate(['/workout']);
-  }
 }

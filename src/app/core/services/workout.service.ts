@@ -3,13 +3,17 @@ import { StorageService } from './storage.service';
 import { AudioHapticService } from './audio-haptic.service';
 import { AdaptiveEngineService } from './adaptive-engine.service';
 import { MentalMathService } from './mental-math.service';
+import { ProgressionEngineService, ALL_FOCUS_UNIT_IDS } from './progression-engine.service';
 import { 
   CognitiveCategory, 
   DailyWorkoutSession, 
   ExerciseAttempt, 
   ExerciseQuestion, 
   ExerciseType, 
-  PendingReviewError 
+  PendingReviewError,
+  FocalWorkoutConfig,
+  ExerciseLevel,
+  FocusUnitId
 } from '../models/cognitive.models';
 import { MathDomain } from '../models/mental-math.models';
 
@@ -55,6 +59,9 @@ export interface PersistedWorkoutSession {
   pendingErrors: PendingReviewError[];
   state: WorkoutState;
   exerciseTypes: ExerciseType[];
+  isFocalWorkout?: boolean;
+  focalWorkoutConfig?: FocalWorkoutConfig | null;
+  questionsQueue?: ExerciseQuestion[];
 }
 
 @Injectable({
@@ -65,6 +72,7 @@ export class WorkoutService {
   private audio = inject(AudioHapticService);
   private engine = inject(AdaptiveEngineService);
   private mentalMath = inject(MentalMathService);
+  private progression = inject(ProgressionEngineService);
 
   // Estados Reativos do Treino
   public state = signal<WorkoutState>('IDLE');
@@ -73,6 +81,11 @@ export class WorkoutService {
   public totalQuestionsCount = signal<number>(12);
   public sessionProgressPercent = signal<number>(0);
   public activeMathDomain = signal<MathDomain | 'MIXED' | null>(null);
+  public isFocalWorkout = signal<boolean>(false);
+  public focalWorkoutConfig = signal<FocalWorkoutConfig | null>(null);
+
+  // Eventos de Level Up ocorridos na sessão
+  public levelUpEvents = signal<Array<{ type: ExerciseType; newLevel: ExerciseLevel }>>([]);
   
   // Feedback imediato sutil (sem interromper)
   public feedback = signal<{ isCorrect: boolean; text: string } | null>(null);
@@ -100,6 +113,9 @@ export class WorkoutService {
   public startDailyWorkout(targetMinutes?: number): void {
     const mins = targetMinutes ?? this.storage.profileSignal().targetMinutes ?? 8;
     this.activeMathDomain.set(null);
+    this.isFocalWorkout.set(false);
+    this.focalWorkoutConfig.set(null);
+    this.levelUpEvents.set([]);
     this.selectedMinutes.set(mins);
     this.sessionId = 'sesh-' + Date.now().toString(36);
     this.sessionAttempts = [];
@@ -128,6 +144,9 @@ export class WorkoutService {
   // Inicia Treino Focado em um Módulo de Matemática Mental (Sec. 2)
   public startMathDomainWorkout(domain: MathDomain | 'MIXED', targetMinutes = 3): void {
     this.activeMathDomain.set(domain);
+    this.isFocalWorkout.set(false);
+    this.focalWorkoutConfig.set(null);
+    this.levelUpEvents.set([]);
     this.selectedMinutes.set(targetMinutes);
     this.sessionId = 'math-' + domain.toLowerCase() + '-' + Date.now().toString(36);
     this.sessionAttempts = [];
@@ -156,6 +175,40 @@ export class WorkoutService {
     this.saveActiveSessionToStorage();
   }
 
+  // Inicia Treino Focal (Nova Central de Treinos) — suporta 1 ou várias unidades de foco
+  public async startFocalWorkout(config: FocalWorkoutConfig): Promise<void> {
+    await this.progression.init();
+    this.activeMathDomain.set(null);
+    this.isFocalWorkout.set(true);
+    this.focalWorkoutConfig.set(config);
+    this.levelUpEvents.set([]);
+    this.selectedMinutes.set(config.durationMinutes);
+    this.sessionId = 'focal-' + (config.sessionId ?? config.unitIds[0]) + '-' + Date.now().toString(36);
+    this.sessionAttempts = [];
+    this.pendingErrors = [];
+    this.consecutiveErrors = 0;
+    this.naturalHintActive.set(false);
+    this.sessionStartTime = Date.now();
+    this.currentDifficulty = 50;
+
+    const totalQ = this.progression.questionsForFocalDuration(config.durationMinutes);
+    const plan = this.progression.buildTrainingPlan(config.unitIds, totalQ);
+
+    this.sessionExerciseTypes = [];
+    const queue: ExerciseQuestion[] = plan.map(({ unitId, level }) => {
+      const q = this.engine.generateQuestionForUnit(unitId, level);
+      this.sessionExerciseTypes.push(q.type);
+      return q;
+    });
+
+    this.questionsQueue = queue;
+    this.totalQuestionsCount.set(queue.length);
+    this.currentQuestionIndex.set(0);
+    this.sessionProgressPercent.set(0);
+    this.state.set('WARMUP');
+    this.saveActiveSessionToStorage();
+  }
+
   // Transição do Aquecimento para o primeiro Exercício
   public endWarmup(): void {
     this.state.set('EXERCISING');
@@ -168,24 +221,14 @@ export class WorkoutService {
     // 3 min = 6 questões | 8 min = 12 questões | 15 min = 20 questões
     const count = targetMinutes <= 3 ? 6 : (targetMinutes <= 8 ? 12 : 20);
 
-    const exerciseDistribution: ExerciseType[] = [
-      'MENTAL_MATH',
-      'PERCENTAGE',
-      'WORD_PROBLEM',
-      'NUMBER_SEQUENCE',
-      'STROOP_TEST',
-      'SPATIAL_GRID',
-      'LOGICAL_PATTERN',
-      'ATTENTION_TARGET',
-      'NUMBER_ORDERING',
-      'GENIUS_COLORS'
-    ];
-
+    // Distribuição das 19 unidades de foco no treino diário
     this.sessionExerciseTypes = [];
     for (let i = 0; i < count; i++) {
-      const type = exerciseDistribution[i % exerciseDistribution.length];
-      this.sessionExerciseTypes.push(type);
-      queue.push(this.engine.generateQuestion(type, this.currentDifficulty));
+      const unitId = ALL_FOCUS_UNIT_IDS[i % ALL_FOCUS_UNIT_IDS.length];
+      const level  = this.progression.getLevel(unitId);
+      const q = this.engine.generateQuestionForUnit(unitId, level);
+      this.sessionExerciseTypes.push(q.type);
+      queue.push(q);
     }
 
     return queue;
@@ -263,6 +306,18 @@ export class WorkoutService {
       await this.mentalMath.recordAttempt(q.knowledgeId, q.mathDomain, isCorrect, responseTimeMs);
     }
 
+    // Registrar tentativa no Motor de Progressão de Níveis 1-5
+    if (this.state() === 'EXERCISING') {
+      const unitId = (q.unitId ?? null) as FocusUnitId | null;
+      if (unitId) {
+        const result = await this.progression.recordAttempt(unitId, isCorrect, responseTimeMs);
+        if (result.levelUp) {
+          const current = this.levelUpEvents();
+          this.levelUpEvents.set([...current, { type: q.type, newLevel: result.newLevel }]);
+        }
+      }
+    }
+
     // Se errou e ainda estamos no treino regular, guarda para a revisão final
     if (!isCorrect && this.state() === 'EXERCISING') {
       const errItem: PendingReviewError = {
@@ -286,6 +341,7 @@ export class WorkoutService {
     if (this.consecutiveErrors >= 2) {
       this.currentDifficulty = Math.max(10, this.currentDifficulty - 4);
     }
+
 
     // Se foi tempo esgotado, pausa e exibe tela intermediária para evitar cliques acidentais
     if (isTimeout) {
@@ -619,17 +675,25 @@ export class WorkoutService {
       this.sessionExerciseTypes = saved.exerciseTypes || [];
       this.totalQuestionsCount.set(saved.totalQuestionsCount);
       this.currentQuestionIndex.set(saved.currentQuestionIndex);
+      this.isFocalWorkout.set(!!saved.isFocalWorkout);
+      this.focalWorkoutConfig.set(saved.focalWorkoutConfig ?? null);
 
-      // Reconstruir fila de questões:
-      // O teste atual (no currentQuestionIndex) e os seguintes são REFEITOS com novos valores e ordem!
-      const queue: ExerciseQuestion[] = [];
-      for (let i = 0; i < saved.totalQuestionsCount; i++) {
-        if (saved.activeMathDomain) {
+      // Reconstruir fila de questões respeitando o tipo de treino:
+      let queue: ExerciseQuestion[] = [];
+      if (saved.isFocalWorkout && saved.focalWorkoutConfig) {
+        const plan = this.progression.buildTrainingPlan(
+          saved.focalWorkoutConfig.unitIds,
+          saved.totalQuestionsCount
+        );
+        queue = plan.map(({ unitId, level }) => this.engine.generateQuestionForUnit(unitId, level));
+      } else if (saved.activeMathDomain) {
+        for (let i = 0; i < saved.totalQuestionsCount; i++) {
           queue.push(this.engine.generateMathDomainQuestion(saved.activeMathDomain, this.currentDifficulty));
-        } else {
-          const type = this.sessionExerciseTypes[i] || 'MENTAL_MATH';
-          queue.push(this.engine.generateQuestion(type, this.currentDifficulty));
         }
+      } else if (saved.questionsQueue && saved.questionsQueue.length === saved.totalQuestionsCount) {
+        queue = [...saved.questionsQueue];
+      } else {
+        queue = this.buildSessionQueue(saved.selectedMinutes || 8);
       }
       this.questionsQueue = queue;
 
@@ -678,7 +742,10 @@ export class WorkoutService {
         sessionAttempts: this.sessionAttempts,
         pendingErrors: this.pendingErrors,
         state: this.state(),
-        exerciseTypes: this.sessionExerciseTypes
+        exerciseTypes: this.sessionExerciseTypes,
+        isFocalWorkout: this.isFocalWorkout(),
+        focalWorkoutConfig: this.focalWorkoutConfig(),
+        questionsQueue: this.questionsQueue
       };
       localStorage.setItem(ACTIVE_SESSION_STORAGE_KEY, JSON.stringify(data));
     } catch {}
