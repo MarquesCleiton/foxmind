@@ -77,7 +77,7 @@
       <div class="quick-toggle-actions">
         <button class="btn-link-action" (click)="expandAll()">Expandir Todos</button>
         <span class="action-divider">•</span>
-        <button class="btn-link-action" (click)="collapseAll()">Recolher Extras</button>
+        <button class="btn-link-action" (click)="collapseAll()">Recolher Todos</button>
       </div>
     </div>
   </header>
@@ -85,10 +85,10 @@
   <!-- ==================== LISTA DE CARDS DE DICAS ==================== -->
   <main class="topics-grid">
     @for (topic of filteredTopics(); track topic.id) {
-      <article class="topic-card card animate-pop-in" [attr.data-cat]="topic.category">
+      <article class="topic-card card animate-pop-in" [attr.data-cat]="topic.category" [class.is-expanded]="isExpanded(topic.id)">
         
-        <!-- Topo do Card: Ícone, Título e Badge de Regra -->
-        <div class="topic-header-row">
+        <!-- Topo do Card: Clicável — Ícone, Título, Badge e Seta -->
+        <div class="topic-header-row topic-header-clickable" (click)="toggleExpand(topic.id)">
           <div class="topic-identity">
             <span class="topic-icon">{{ topic.icon }}</span>
             <div class="topic-title-box">
@@ -100,108 +100,112 @@
               </div>
             </div>
           </div>
-          <span class="badge-compact" [ngClass]="topic.badgeClass">
-            {{ topic.badgeLabel }}
-          </span>
+          <div class="header-right-cluster">
+            <span class="badge-compact" [ngClass]="topic.badgeClass">
+              {{ topic.badgeLabel }}
+            </span>
+            <span class="card-chevron" [class.open]="isExpanded(topic.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </span>
+          </div>
         </div>
 
-        <!-- Enunciado e Regra Principal -->
-        <div class="topic-rule-box">
-          <p class="rule-description">
-            {{ topic.ruleText }} 
-            <strong>Dica central: {{ topic.ruleHighlight }}</strong>
-          </p>
-        </div>
-
-        <!-- ==================== 1. EXEMPLO DE RESPOSTA (ESTILO ELEGANTE) ==================== -->
-        <div class="pre-start-example-box">
-          <div class="example-header">
-            <span class="example-label">EXEMPLO DE RESPOSTA:</span>
-            <span class="example-mode-badge">{{ topic.defaultQuestionsText }}</span>
+        <!-- ======= CONTEÚDO EXPANSÍVEL (oculto por padrão) ======= -->
+        @if (isExpanded(topic.id)) {
+          <!-- Enunciado e Regra Principal -->
+          <div class="topic-rule-box animate-fade-in">
+            <p class="rule-description">
+              {{ topic.ruleText }} 
+              <strong>Dica central: {{ topic.ruleHighlight }}</strong>
+            </p>
           </div>
 
-          <!-- Fluxo Visual: Você Vê ➔ Transformação ➔ Você Responde -->
-          <div class="example-flow">
-            <!-- Passo 1: O que o usuário vê -->
-            <div class="example-step">
-              <span class="step-label">{{ topic.example.seeLabel }}</span>
-              <div class="demo-digits">
-                @for (token of topic.example.seeTokens; track $index) {
-                  <span class="demo-pill">{{ token }}</span>
-                }
-              </div>
+          <!-- ==================== 1. EXEMPLO DE RESPOSTA (ESTILO ELEGANTE) ==================== -->
+          <div class="pre-start-example-box animate-fade-in">
+            <div class="example-header">
+              <span class="example-label">EXEMPLO DE RESPOSTA:</span>
+              <span class="example-mode-badge">{{ topic.defaultQuestionsText }}</span>
             </div>
 
-            <!-- Flecha com a operação mental -->
-            <div class="example-arrow">
-              <span>{{ topic.example.arrowText }}</span>
-            </div>
-
-            <!-- Passo 2: O que o usuário responde -->
-            <div class="example-step">
-              <span class="step-label highlight-label">{{ topic.example.actionLabel }}</span>
-              <div class="demo-digits demo-highlight">
-                @for (token of topic.example.actionTokens; track $index) {
-                  <span class="demo-pill active">{{ token }}</span>
-                }
-              </div>
-            </div>
-          </div>
-
-          <!-- Raciocínio Linha a Linha -->
-          <div class="example-reasoning-line">
-            <span class="reasoning-symbol">💡</span>
-            <span class="reasoning-text">{{ topic.example.reasoning }}</span>
-          </div>
-
-          <!-- Exemplo Secundário / Variação Avançada (se houver) -->
-          @if (topic.secondaryExample) {
-            <div class="secondary-example-flow">
-              <div class="sec-step">
-                <span class="sec-label">{{ topic.secondaryExample.seeLabel }}</span>
+            <!-- Fluxo Visual: Você Vê ➔ Transformação ➔ Você Responde -->
+            <div class="example-flow">
+              <!-- Passo 1: O que o usuário vê -->
+              <div class="example-step">
+                <span class="step-label">{{ topic.example.seeLabel }}</span>
                 <div class="demo-digits">
-                  @for (tok of topic.secondaryExample.seeTokens; track $index) {
-                    <span class="demo-pill demo-pill-sm">{{ tok }}</span>
+                  @for (token of topic.example.seeTokens; track $index) {
+                    <span class="demo-pill">{{ token }}</span>
                   }
                 </div>
               </div>
-              <div class="sec-arrow">{{ topic.secondaryExample.arrowText }}</div>
-              <div class="sec-step">
-                <span class="sec-label highlight-label">{{ topic.secondaryExample.actionLabel }}</span>
-                <div class="demo-digits">
-                  @for (tok of topic.secondaryExample.actionTokens; track $index) {
-                    <span class="demo-pill demo-pill-sm active">{{ tok }}</span>
+
+              <!-- Flecha com a operação mental -->
+              <div class="example-arrow">
+                <span>{{ topic.example.arrowText }}</span>
+              </div>
+
+              <!-- Passo 2: O que o usuário responde -->
+              <div class="example-step">
+                <span class="step-label highlight-label">{{ topic.example.actionLabel }}</span>
+                <div class="demo-digits demo-highlight">
+                  @for (token of topic.example.actionTokens; track $index) {
+                    <span class="demo-pill active">{{ token }}</span>
                   }
                 </div>
               </div>
             </div>
-            <p class="sec-reasoning">{{ topic.secondaryExample.reasoning }}</p>
-          }
-        </div>
 
-        <!-- ==================== 2. DICA DA RAPOSA ==================== -->
-        <div class="pre-start-strategy">
-          <span class="strategy-fox-icon">🦊</span>
-          <div class="strategy-content">
-            <span class="strategy-lead">Dica da Raposa:</span>
-            <p class="strategy-text">{{ topic.foxTip }}</p>
-          </div>
-        </div>
-
-        <!-- ==================== 3. ACELERAÇÃO & VELOCIDADE DE PENSAMENTO ==================== -->
-        <div class="speed-hacks-section">
-          <div class="speed-hacks-header" (click)="toggleExpand(topic.id)">
-            <div class="speed-title-wrap">
-              <span class="speed-bolt">⚡</span>
-              <span class="speed-title">Aceleração de Pensamento & Neuro-Técnicas</span>
+            <!-- Raciocínio Linha a Linha -->
+            <div class="example-reasoning-line">
+              <span class="reasoning-symbol">💡</span>
+              <span class="reasoning-text">{{ topic.example.reasoning }}</span>
             </div>
-            <button class="btn-toggle-hacks">
-              {{ isExpanded(topic.id) ? 'Recolher ▲' : 'Ver Técnicas ▼' }}
-            </button>
+
+            <!-- Exemplo Secundário / Variação Avançada (se houver) -->
+            @if (topic.secondaryExample) {
+              <div class="secondary-example-flow">
+                <div class="sec-step">
+                  <span class="sec-label">{{ topic.secondaryExample.seeLabel }}</span>
+                  <div class="demo-digits">
+                    @for (tok of topic.secondaryExample.seeTokens; track $index) {
+                      <span class="demo-pill demo-pill-sm">{{ tok }}</span>
+                    }
+                  </div>
+                </div>
+                <div class="sec-arrow">{{ topic.secondaryExample.arrowText }}</div>
+                <div class="sec-step">
+                  <span class="sec-label highlight-label">{{ topic.secondaryExample.actionLabel }}</span>
+                  <div class="demo-digits">
+                    @for (tok of topic.secondaryExample.actionTokens; track $index) {
+                      <span class="demo-pill demo-pill-sm active">{{ tok }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+              <p class="sec-reasoning">{{ topic.secondaryExample.reasoning }}</p>
+            }
           </div>
 
-          @if (isExpanded(topic.id)) {
-            <div class="speed-hacks-body animate-fade-in">
+          <!-- ==================== 2. DICA DA RAPOSA ==================== -->
+          <div class="pre-start-strategy animate-fade-in">
+            <span class="strategy-fox-icon">🦊</span>
+            <div class="strategy-content">
+              <span class="strategy-lead">Dica da Raposa:</span>
+              <p class="strategy-text">{{ topic.foxTip }}</p>
+            </div>
+          </div>
+
+          <!-- ==================== 3. ACELERAÇÃO & VELOCIDADE DE PENSAMENTO ==================== -->
+          <div class="speed-hacks-section animate-fade-in">
+            <div class="speed-hacks-header">
+              <div class="speed-title-wrap">
+                <span class="speed-bolt">⚡</span>
+                <span class="speed-title">Aceleração de Pensamento & Neuro-Técnicas</span>
+              </div>
+            </div>
+            <div class="speed-hacks-body">
               @for (hack of topic.speedHacks; track hack.title) {
                 <div class="hack-card">
                   <div class="hack-header-row">
@@ -212,17 +216,18 @@
                 </div>
               }
             </div>
-          }
-        </div>
+          </div>
 
-        <!-- ==================== 4. BOTÃO DE AÇÃO DIRETA ==================== -->
-        <div class="topic-footer-action">
-          <button class="btn-primary start-topic-btn" (click)="startTraining(topic.id)">
-            <span>▶ Treinar Esta Habilidade ({{ getUnitQuestionsLabel(topic.id) }})</span>
-          </button>
-        </div>
+          <!-- ==================== 4. BOTÃO DE AÇÃO DIRETA ==================== -->
+          <div class="topic-footer-action animate-fade-in">
+            <button class="btn-primary start-topic-btn" (click)="startTraining(topic.id)">
+              <span>▶ Treinar Esta Habilidade ({{ getUnitQuestionsLabel(topic.id) }})</span>
+            </button>
+          </div>
+        }
 
       </article>
+
     } @empty {
       <div class="empty-results-card card animate-pop-in">
         <span class="empty-icon">🔍</span>

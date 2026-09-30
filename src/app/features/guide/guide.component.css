@@ -278,6 +278,62 @@
   gap: 8px;
 }
 
+/* Cabeçalho clicável com cursor e hover */
+.topic-header-clickable {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin: -4px;
+  transition: background var(--transition-fast);
+}
+
+.topic-header-clickable:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.topic-header-clickable:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Cluster direito: badge + chevron */
+.header-right-cluster {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Seta indicadora de expansão */
+.card-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted);
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1), color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.card-chevron svg {
+  width: 16px;
+  height: 16px;
+}
+
+.card-chevron.open {
+  transform: rotate(180deg);
+  color: var(--fox-primary);
+}
+
+.topic-card.is-expanded {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.topic-card.is-expanded[data-cat="CALCULATION"] { border-color: var(--color-calc); }
+.topic-card.is-expanded[data-cat="MEMORY"]      { border-color: var(--color-mem); }
+.topic-card.is-expanded[data-cat="ATTENTION"]   { border-color: var(--color-att); }
+.topic-card.is-expanded[data-cat="LOGIC"]       { border-color: var(--color-spd); }
+
 .topic-identity {
   display: flex;
   align-items: center;
@@ -611,14 +667,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  cursor: pointer;
-  user-select: none;
   background: rgba(0, 0, 0, 0.15);
-  transition: background var(--transition-fast);
-}
-
-.speed-hacks-header:hover {
-  background: rgba(255, 255, 255, 0.04);
 }
 
 .speed-title-wrap {
