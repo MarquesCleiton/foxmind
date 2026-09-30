@@ -10,16 +10,16 @@
       <p class="warmup-subtitle">Respire fundo por um instante. O motor adaptativo preparou uma sessão focada para você hoje.</p>
 
       <div class="warmup-info-pills">
-        <span class="badge badge-fox">⏱ {{ workout.selectedMinutes() }} minutos</span>
+        <span class="badge badge-fox">🎯 {{ workout.totalQuestionsCount() }} questões</span>
         @if (workout.isFocalWorkout()) {
           <span class="badge badge-calc">{{ focalTitle() }}</span>
-          <span class="badge badge-att">⭐ Progressão 1 a 5</span>
+          <span class="badge badge-att">⭐ Rumo às 50 Sessões</span>
         } @else if (workout.activeMathDomain(); as dom) {
           <span class="badge badge-calc">🧮 {{ getMathDomainLabel(dom) }}</span>
-          <span class="badge badge-att">⚡ Dificuldade Adaptativa</span>
+          <span class="badge badge-att">⚡ 20 Questões</span>
         } @else {
-          <span class="badge badge-calc">🧠 4 Habilidades</span>
-          <span class="badge badge-att">⚡ Dificuldade Adaptativa</span>
+          <span class="badge badge-calc">🧠 Treino Geral (40 Questões)</span>
+          <span class="badge badge-att">🛡️ Ativa Super Escudo</span>
         }
       </div>
 

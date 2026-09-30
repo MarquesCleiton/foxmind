@@ -217,6 +217,34 @@
 .icon-mem { background: var(--color-mem-subtle); }
 .icon-att { background: var(--color-att-subtle); }
 .icon-spd { background: var(--color-spd-subtle); }
+.icon-log { background: rgba(168, 85, 247, 0.18); }
+
+.shield-callout-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.22);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-top: 4px;
+}
+
+.shield-callout-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.shield-callout-text {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.shield-callout-text strong {
+  color: var(--fox-primary);
+  font-weight: 700;
+}
 
 .tile-info {
   display: flex;

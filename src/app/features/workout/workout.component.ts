@@ -109,9 +109,9 @@ export class WorkoutComponent implements OnInit {
     }
     const domain = this.workout.activeMathDomain();
     if (domain) {
-      this.workout.startMathDomainWorkout(domain, 3);
+      this.workout.startMathDomainWorkout(domain);
     } else {
-      this.workout.startDailyWorkout(8);
+      this.workout.startDailyWorkout();
     }
   }
 

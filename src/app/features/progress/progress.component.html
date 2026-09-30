@@ -86,8 +86,8 @@
           <span class="stat-caption">Acurácia Global</span>
         </div>
         <div class="hero-stat">
-          <span class="stat-number">{{ totalQuestionsAnswered() }}</span>
-          <span class="stat-caption">Questões Feitas</span>
+          <span class="stat-number">{{ totalSessionsCompleted() }}</span>
+          <span class="stat-caption">Sessões Feitas</span>
         </div>
       </div>
     </section>
@@ -117,15 +117,15 @@
           <div class="guide-rules-list">
             <div class="rule-item">
               <span class="rule-bullet">📈</span>
-              <p><strong>Subir de Nível:</strong> atinja média de <strong>95% de acertos</strong> em 20 questões para ser promovido.</p>
+              <p><strong>Subir de Nível:</strong> complete <strong>50 sessões</strong> com média de <strong>95% de acertos</strong> para ser promovido.</p>
             </div>
             <div class="rule-item">
               <span class="rule-bullet">🛡️</span>
-              <p><strong>Permanência:</strong> níveis superiores exigem treinos periódicos para o escudo não decair.</p>
+              <p><strong>Super Escudo:</strong> o treino diário geral protege todas as 19 habilidades contra decaimento.</p>
             </div>
             <div class="rule-item">
               <span class="rule-bullet">🎯</span>
-              <p><strong>Queda por erro:</strong> média abaixo de <strong>50%</strong> rebaixa o nível daquela habilidade.</p>
+              <p><strong>Queda por erro:</strong> média persistente abaixo de <strong>50%</strong> rebaixa o nível daquela habilidade.</p>
             </div>
           </div>
           <button class="btn-primary start-first-btn" (click)="startWorkout()">
@@ -344,15 +344,15 @@
                       </div>
                     </div>
 
-                    <!-- Barra de Acurácia Rumo a 95% -->
+                    <!-- Barra de Progresso Rumo às 50 Sessões -->
                     <div class="skill-progress-bar">
                       <div
                         class="skill-progress-fill"
-                        [style.width.%]="sub.state.currentLevel === 5 ? 100 : (sub.accuracy / 95) * 100"
-                        [class.fill-promote]="sub.accuracy >= 95"
-                        [class.fill-danger]="sub.accuracy < 50 && sub.attemptsCount >= 10">
+                        [style.width.%]="sub.state.currentLevel === 5 ? 100 : (sub.sessionsCount >= 50 ? 100 : sub.sessionsCount * 2)"
+                        [class.fill-promote]="sub.sessionsCount >= 50 && sub.accuracy >= 95"
+                        [class.fill-danger]="sub.accuracy < 50 && sub.sessionsCount >= 10">
                       </div>
-                      <div class="skill-target-marker" title="Meta de 95% para promoção"></div>
+                      <div class="skill-target-marker" title="Meta de 50 sessões e 95% para promoção"></div>
                     </div>
 
                     <!-- Mensagem Diagnóstica + Ação Direta -->
@@ -364,7 +364,7 @@
                       <button
                         class="btn-evolve-skill"
                         (click)="openUnitModal(sub.meta, $event)">
-                        Evoluir →
+                        Evoluir (20Q) →
                       </button>
                     </div>
 
@@ -379,7 +379,7 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════
-         4. MODAL DE ESCOLHA DE TEMPO E INÍCIO DO DESAFIO
+         4. MODAL DE CONFIRMAÇÃO DO DESAFIO (PADRÃO 20 QUESTÕES)
          ═══════════════════════════════════════════════════════════ -->
     @if (modalTarget(); as target) {
       <div class="modal-backdrop" (click)="closeModal()">
@@ -395,11 +395,7 @@
                   {{ target.type === 'unit' ? target.meta?.name : target.session?.name }}
                 </h3>
                 <span class="modal-subtitle">
-                  @if (target.type === 'unit') {
-                    {{ progression.getLevelFullLabel(target.level) }} • {{ target.meta?.description }}
-                  } @else {
-                    Domínio Completo • {{ progression.getLevelFullLabel(target.level) }}
-                  }
+                  {{ target.levelTitle }} • {{ target.type === 'unit' ? target.meta?.description : (target.session?.unitIds?.length + ' habilidades') }}
                 </span>
               </div>
             </div>
@@ -407,49 +403,50 @@
           </div>
 
           <div class="modal-goal-banner">
-            @if (target.type === 'unit') {
-              @if (target.level < 5) {
-                <span class="goal-icon">🎯</span>
+            @if (target.level < 5) {
+              <span class="goal-icon">🎯</span>
+              <div class="goal-info">
+                <span class="goal-title">Critério para o Nível {{ target.level + 1 }}:</span>
                 <span class="goal-text">
-                  Meta para subir para o <strong>Nível {{ target.level + 1 }}</strong>: atingir <strong>95% de acertos</strong> em 20 questões.
+                  Completar <strong>50 sessões</strong> neste nível mantendo média geral de <strong>≥ 95% de acertos</strong>.
                 </span>
-              } @else {
-                <span class="goal-icon">⭐</span>
-                <span class="goal-text">
-                  Você está no <strong>Nível 5 Máximo (Mestre)</strong>. Treine para manter seu escudo ativo contra o decaimento!
-                </span>
-              }
+              </div>
             } @else {
-              <span class="goal-icon">⚡</span>
-              <span class="goal-text">
-                Você treinará todas as habilidades deste domínio em rotação contínua.
-              </span>
+              <span class="goal-icon">⭐</span>
+              <div class="goal-info">
+                <span class="goal-title">Nível Mestre Atingido:</span>
+                <span class="goal-text">
+                  Você está no nível máximo! Treine regularmente para manter seu escudo ativo contra o decaimento por inatividade.
+                </span>
+              </div>
             }
           </div>
 
-          <div class="duration-section">
-            <label class="duration-label">Escolha o tempo de treino:</label>
-            <div class="duration-grid">
-              @for (opt of DURATION_OPTIONS; track opt.minutes) {
-                <button
-                  type="button"
-                  class="duration-pill-card"
-                  [class.active]="selectedDuration() === opt.minutes"
-                  [class.recommended]="opt.isRecommended"
-                  (click)="selectDuration(opt.minutes)">
-
-                  @if (opt.isRecommended) {
-                    <span class="rec-badge">Recomendado</span>
-                  }
-
-                  <div class="dur-main">
-                    <span class="dur-time">{{ opt.label }}</span>
-                    <span class="dur-questions">{{ opt.questions }} questões</span>
-                  </div>
-                  <span class="dur-sub">{{ opt.sublabel }}</span>
-                </button>
-              }
+          <!-- Progresso Atual da Unidade -->
+          <div class="modal-progress-card">
+            <div class="modal-prog-row">
+              <span class="modal-prog-label">Sessões Concluídas no Nível:</span>
+              <span class="modal-prog-val"><strong>{{ target.sessionsCount }}</strong> / 50 sessões</span>
             </div>
+            <div class="modal-prog-bar-track">
+              <div
+                class="modal-prog-bar-fill"
+                [style.width.%]="target.sessionsCount >= 50 ? 100 : (target.sessionsCount * 2)"
+                [class.fill-promote]="target.sessionsCount >= 50 && target.accuracy >= 95">
+              </div>
+            </div>
+            <div class="modal-prog-row mt-2">
+              <span class="modal-prog-label">Média das Sessões Recentes:</span>
+              <span class="modal-prog-val" [class.text-promote]="target.accuracy >= 95">
+                <strong>{{ target.accuracy }}%</strong> (Meta: ≥ 95%)
+              </span>
+            </div>
+          </div>
+
+          <!-- Pílula de Formato Padrão -->
+          <div class="challenge-format-pill">
+            <span class="fmt-icon">📝</span>
+            <span class="fmt-text"><strong>Treino Focal Padrão:</strong> 20 questões exclusivas no seu nível.</span>
           </div>
 
           <div class="modal-actions">
@@ -460,7 +457,7 @@
               @if (isStarting()) {
                 <span class="spin-sm"></span> Preparando treino...
               } @else {
-                <span>▶ Iniciar Desafio ({{ selectedDuration() }} min)</span>
+                <span>▶ Iniciar Desafio (20 Questões)</span>
               }
             </button>
           </div>

@@ -6,6 +6,8 @@ import {
   FocusSession,
   TestProgressionState,
   TestAttemptRecord,
+  SessionSummaryRecord,
+  ExerciseAttempt,
   PlayerOverallProgression,
   FocalWorkoutConfig
 } from '../models/cognitive.models';
@@ -103,10 +105,9 @@ const INACTIVITY_WARNING_DAYS: Record<ExerciseLevel, number> = {
   1: Infinity, 2: 15, 3: 10, 4: 7, 5: 5
 };
 
+export const REQUIRED_SESSIONS_FOR_PROMOTION = 50;
+export const PROMOTION_ACCURACY_THRESHOLD    = 95; // 95%
 const WINDOW_SIZE   = 20;
-const PROMOTE_ACC   = 0.95;
-const DEMOTE_ACC    = 0.50;
-const GRACE_PERIOD  = 10;
 
 @Injectable({ providedIn: 'root' })
 export class ProgressionEngineService {
@@ -123,7 +124,11 @@ export class ProgressionEngineService {
 
       for (const unitId of ALL_FOCUS_UNIT_IDS) {
         if (persistedMap.has(unitId)) {
-          this.states.set(unitId, persistedMap.get(unitId)!);
+          const s = persistedMap.get(unitId)!;
+          s.recentSessions = s.recentSessions || [];
+          s.totalSessionsAtLevel = s.totalSessionsAtLevel || 0;
+          s.accumulatedQuestionsBuffer = s.accumulatedQuestionsBuffer || { correct: 0, total: 0 };
+          this.states.set(unitId, s);
         } else {
           const fresh = this.createFreshState(unitId);
           this.states.set(unitId, fresh);
@@ -162,7 +167,10 @@ export class ProgressionEngineService {
       correctCountAtLevel: 0,
       accuracyPercentage: 0,
       lastTrainedAt: 0,
-      gracePeriodAttemptsLeft: 0
+      gracePeriodAttemptsLeft: 0,
+      recentSessions: [],
+      totalSessionsAtLevel: 0,
+      accumulatedQuestionsBuffer: { correct: 0, total: 0 }
     };
   }
 
@@ -311,7 +319,7 @@ export class ProgressionEngineService {
     return remaining <= INACTIVITY_WARNING_DAYS[state.currentLevel];
   }
 
-  // ── Registro de Tentativa ──────────────────────────────────────────────────
+  // ── Registro de Tentativa em Tempo Real ────────────────────────────────────
   async recordAttempt(
     unitId: FocusUnitId,
     isCorrect: boolean,
@@ -327,47 +335,128 @@ export class ProgressionEngineService {
     state.totalAttemptsAtLevel++;
     if (isCorrect) state.correctCountAtLevel++;
     state.lastTrainedAt = Date.now();
-    if (state.gracePeriodAttemptsLeft > 0) state.gracePeriodAttemptsLeft--;
 
-    const windowCorrect = state.recentAttempts.filter(a => a.isCorrect).length;
-    state.accuracyPercentage = Math.round((windowCorrect / state.recentAttempts.length) * 100);
-
-    let levelUp = false;
-    let levelDown = false;
-
-    // Promoção: janela completa + ≥95%
-    if (
-      state.recentAttempts.length >= WINDOW_SIZE &&
-      state.currentLevel < 5 &&
-      state.accuracyPercentage / 100 >= PROMOTE_ACC
-    ) {
-      state.currentLevel = (state.currentLevel + 1) as ExerciseLevel;
-      state.promotedAt = Date.now();
-      state.recentAttempts = [];
-      state.totalAttemptsAtLevel = 0;
-      state.correctCountAtLevel = 0;
-      state.accuracyPercentage = 0;
-      state.gracePeriodAttemptsLeft = GRACE_PERIOD;
-      levelUp = true;
-    }
-    // Rebaixamento: após grace period + <50%
-    else if (
-      state.gracePeriodAttemptsLeft === 0 &&
-      state.currentLevel > 1 &&
-      state.recentAttempts.length >= GRACE_PERIOD &&
-      state.accuracyPercentage / 100 < DEMOTE_ACC
-    ) {
-      state.currentLevel = (state.currentLevel - 1) as ExerciseLevel;
-      state.recentAttempts = [];
-      state.totalAttemptsAtLevel = 0;
-      state.correctCountAtLevel = 0;
-      state.accuracyPercentage = 0;
-      levelDown = true;
+    // Mantém a acurácia em tempo real se ainda não houver sessões completas
+    if (state.recentSessions.length === 0) {
+      const windowCorrect = state.recentAttempts.filter(a => a.isCorrect).length;
+      state.accuracyPercentage = Math.round((windowCorrect / state.recentAttempts.length) * 100);
     }
 
     this.states.set(unitId, state);
     await this.storage.saveTestProgression(state);
-    return { levelUp, levelDown, newLevel: state.currentLevel };
+    return { levelUp: false, levelDown: false, newLevel: state.currentLevel };
+  }
+
+  // ── Registro de Sessão Completa (Promoção por 50 Sessões com Média >= 95%) ───
+  async recordCompletedSession(
+    unitId: FocusUnitId,
+    sessionRecord: SessionSummaryRecord
+  ): Promise<{ levelUp: boolean; newLevel: ExerciseLevel }> {
+    await this.init();
+    const state = this.getState(unitId);
+    state.recentSessions = state.recentSessions || [];
+    state.recentSessions.push(sessionRecord);
+    if (state.recentSessions.length > REQUIRED_SESSIONS_FOR_PROMOTION) {
+      state.recentSessions.shift();
+    }
+
+    state.totalSessionsAtLevel = (state.totalSessionsAtLevel || 0) + 1;
+    state.lastTrainedAt = Date.now();
+
+    // Acurácia média histórica das sessões no nível atual
+    const sessionsAtLevel = state.recentSessions.filter(s => s.level === state.currentLevel);
+    const avgAcc = sessionsAtLevel.length > 0
+      ? Math.round(sessionsAtLevel.reduce((sum, s) => sum + s.accuracyPercentage, 0) / sessionsAtLevel.length)
+      : sessionRecord.accuracyPercentage;
+
+    state.accuracyPercentage = avgAcc;
+
+    let levelUp = false;
+
+    // Regra das 50 sessões consistentes com média >= 95%
+    if (
+      sessionsAtLevel.length >= REQUIRED_SESSIONS_FOR_PROMOTION &&
+      avgAcc >= PROMOTION_ACCURACY_THRESHOLD &&
+      state.currentLevel < 5
+    ) {
+      state.currentLevel = (state.currentLevel + 1) as ExerciseLevel;
+      state.promotedAt = Date.now();
+      state.recentSessions = [];
+      state.totalSessionsAtLevel = 0;
+      state.accuracyPercentage = 0;
+      state.recentAttempts = [];
+      levelUp = true;
+    }
+
+    this.states.set(unitId, state);
+    await this.storage.saveTestProgression(state);
+    return { levelUp, newLevel: state.currentLevel };
+  }
+
+  // ── Acúmulo de Blocos do Treino Geral (40 Questões) ────────────────────────
+  async recordGeneralWorkoutBlocks(attempts: ExerciseAttempt[]): Promise<Array<{ type: ExerciseType; newLevel: ExerciseLevel }>> {
+    await this.init();
+    const promoEvents: Array<{ type: ExerciseType; newLevel: ExerciseLevel }> = [];
+
+    // Agrupa acertos e totais por unitId
+    const counts = new Map<FocusUnitId, { correct: number; total: number; avgTime: number }>();
+    for (const a of attempts) {
+      if (!a.unitId) continue;
+      const cur = counts.get(a.unitId) || { correct: 0, total: 0, avgTime: 0 };
+      cur.total++;
+      if (a.isCorrect) cur.correct++;
+      cur.avgTime += a.responseTimeMs;
+      counts.set(a.unitId, cur);
+    }
+
+    for (const [unitId, res] of counts.entries()) {
+      const state = this.getState(unitId);
+      const buffer = state.accumulatedQuestionsBuffer || { correct: 0, total: 0 };
+      buffer.correct += res.correct;
+      buffer.total += res.total;
+
+      // Cada 20 questões acumuladas fecha 1 bloco consolidado equivalente a 1 sessão
+      while (buffer.total >= 20) {
+        const blockCorrect = Math.min(20, Math.round((buffer.correct / buffer.total) * 20));
+        buffer.total -= 20;
+        buffer.correct = Math.max(0, buffer.correct - blockCorrect);
+
+        const sessionRecord: SessionSummaryRecord = {
+          sessionId: 'gen-block-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+          timestamp: Date.now(),
+          totalQuestions: 20,
+          correctCount: blockCorrect,
+          accuracyPercentage: Math.round((blockCorrect / 20) * 100),
+          averageResponseTimeMs: Math.round(res.avgTime / Math.max(1, res.total)),
+          level: state.currentLevel,
+          source: 'GENERAL_BLOCK'
+        };
+
+        const { levelUp, newLevel } = await this.recordCompletedSession(unitId, sessionRecord);
+        if (levelUp) {
+          const meta = this.getUnitMeta(unitId);
+          promoEvents.push({ type: meta.exerciseType, newLevel });
+        }
+      }
+
+      state.accumulatedQuestionsBuffer = buffer;
+      this.states.set(unitId, state);
+      await this.storage.saveTestProgression(state);
+    }
+
+    return promoEvents;
+  }
+
+  // ── Super Escudo: Proteção Global para as 19 Unidades ──────────────────────
+  async applySuperShield(): Promise<void> {
+    await this.init();
+    const now = Date.now();
+    for (const unitId of ALL_FOCUS_UNIT_IDS) {
+      const state = this.getState(unitId);
+      state.lastTrainedAt = now;
+      this.states.set(unitId, state);
+      await this.storage.saveTestProgression(state);
+    }
   }
 
   // ── Decaimento por Inatividade ─────────────────────────────────────────────
@@ -381,8 +470,8 @@ export class ProgressionEngineService {
       if (daysSince >= tolerance) {
         state.currentLevel = (state.currentLevel - 1) as ExerciseLevel;
         state.recentAttempts = [];
-        state.totalAttemptsAtLevel = 0;
-        state.correctCountAtLevel = 0;
+        state.recentSessions = [];
+        state.totalSessionsAtLevel = 0;
         state.accuracyPercentage = 0;
         state.gracePeriodAttemptsLeft = 0;
         this.states.set(unitId, state);
@@ -391,27 +480,60 @@ export class ProgressionEngineService {
     }
   }
 
-  // ── Helpers de Treino ──────────────────────────────────────────────────────
-  questionsForFocalDuration(minutes: FocalWorkoutConfig['durationMinutes']): number {
-    switch (minutes) {
-      case 2:  return 6;
-      case 5:  return 12;
-      case 10: return 20;
+  // ── Geradores de Fila de Treino ────────────────────────────────────────────
+
+  /**
+   * Monta o plano do Treino Geral Diário: 40 Questões
+   * (10 Cálculo + 10 Memória + 10 Atenção + 10 Raciocínio Lógico),
+   * calibradas no nível exato do jogador em cada habilidade.
+   */
+  buildGeneralWorkoutPlan(totalQuestions = 40): Array<{ unitId: FocusUnitId; level: ExerciseLevel }> {
+    const calculationUnits: FocusUnitId[] = ['math-addition', 'math-subtraction', 'math-multiplication', 'math-division', 'pct-basic', 'pct-applied'];
+    const memoryUnits: FocusUnitId[]      = ['seq-forward', 'seq-reverse', 'spatial-grid', 'genius-colors'];
+    const attentionUnits: FocusUnitId[]   = ['att-match', 'att-negate', 'stroop-ink', 'stroop-word', 'number-ordering'];
+    const logicUnits: FocusUnitId[]       = ['pat-arithmetic', 'pat-geometric', 'pat-complex', 'word-problem'];
+
+    const perDomain = Math.floor(totalQuestions / 4); // 10 por área
+    const plan: Array<{ unitId: FocusUnitId; level: ExerciseLevel }> = [];
+
+    // 10 de Cálculo
+    for (let i = 0; i < perDomain; i++) {
+      const uid = calculationUnits[i % calculationUnits.length];
+      plan.push({ unitId: uid, level: this.getLevel(uid) });
     }
+    // 10 de Memória
+    for (let i = 0; i < perDomain; i++) {
+      const uid = memoryUnits[i % memoryUnits.length];
+      plan.push({ unitId: uid, level: this.getLevel(uid) });
+    }
+    // 10 de Atenção
+    for (let i = 0; i < perDomain; i++) {
+      const uid = attentionUnits[i % attentionUnits.length];
+      plan.push({ unitId: uid, level: this.getLevel(uid) });
+    }
+    // 10 de Lógica
+    for (let i = 0; i < perDomain; i++) {
+      const uid = logicUnits[i % logicUnits.length];
+      plan.push({ unitId: uid, level: this.getLevel(uid) });
+    }
+
+    // Embaralha para alternância cognitiva dinâmica
+    return plan.sort(() => Math.random() - 0.5);
   }
 
   /**
-   * Monta a lista de pares (unitId, level) para uma sessão de treino.
-   * Se forem várias unitIds, distribui as questões uniformemente entre elas.
+   * Monta o plano do Treino Focal: padrão 20 Questões
+   * 100% focado nas unidades selecionadas no nível do jogador.
    */
-  buildTrainingPlan(
+  buildFocalWorkoutPlan(
     unitIds: FocusUnitId[],
-    totalQuestions: number
+    totalQuestions = 20,
+    forcedLevel?: ExerciseLevel
   ): Array<{ unitId: FocusUnitId; level: ExerciseLevel }> {
     const plan: Array<{ unitId: FocusUnitId; level: ExerciseLevel }> = [];
     for (let i = 0; i < totalQuestions; i++) {
       const unitId = unitIds[i % unitIds.length];
-      plan.push({ unitId, level: this.getLevel(unitId) });
+      plan.push({ unitId, level: forcedLevel ?? this.getLevel(unitId) });
     }
     return plan;
   }

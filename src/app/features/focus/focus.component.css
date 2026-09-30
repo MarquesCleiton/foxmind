@@ -687,86 +687,97 @@
   flex-shrink: 0;
 }
 
-/* Duração */
-.duration-section {
+.goal-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
 }
 
-.duration-label {
+.goal-title {
   font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-
-.duration-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-
-.duration-pill-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  transition: all var(--transition-fast);
-  position: relative;
-  overflow: hidden;
-}
-
-.duration-pill-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.duration-pill-card.active {
-  background: rgba(249, 115, 22, 0.12);
-  border-color: var(--fox-primary);
-  box-shadow: 0 0 16px rgba(249, 115, 22, 0.2);
-}
-
-.rec-badge {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  font-size: 0.62rem;
   font-weight: 800;
-  background: var(--fox-primary);
-  color: #fff;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.dur-main {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.dur-time {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-
-.dur-questions {
-  font-size: 0.74rem;
-  font-weight: 600;
   color: var(--fox-light);
 }
 
-.dur-sub {
-  font-size: 0.72rem;
-  color: var(--text-muted);
+.goal-text {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+/* Card de Progresso das 50 Sessões */
+.modal-progress-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-prog-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.modal-prog-label {
+  color: var(--text-secondary);
+}
+
+.modal-prog-val {
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.modal-prog-val.text-promote {
+  color: #10b981;
+}
+
+.modal-prog-bar-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.modal-prog-bar-fill {
+  height: 100%;
+  background: var(--fox-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.modal-prog-bar-fill.fill-promote {
+  background: #10b981;
+}
+
+.challenge-format-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+.fmt-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.fmt-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.fmt-text strong {
+  color: var(--fox-primary);
 }
 
 /* Ações */

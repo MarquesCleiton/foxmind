@@ -138,8 +138,90 @@ export class AdaptiveEngineService {
   }
 
   // =========================================================================
-  // 1. SESSÃO CÁLCULO (Níveis 1 a 5)
+  // 1. SESSÃO CÁLCULO (Níveis 1 a 5) COM BARALHOS EXAUSTIVOS DE 1 DÍGITO (N1)
   // =========================================================================
+
+  // Baralhos de Fatos Básicos do Nível 1
+  private additionDeckN1: Array<{ a: number; b: number }> = [];
+  private activeAdditionQueueN1: Array<{ a: number; b: number }> = [];
+
+  private subtractionDeckN1: Array<{ prompt: string; expected: number; hint: string; strategy: string }> = [];
+  private activeSubtractionQueueN1: Array<{ prompt: string; expected: number; hint: string; strategy: string }> = [];
+
+  private multiplicationDeckN1: Array<{ a: number; b: number }> = [];
+  private activeMultiplicationQueueN1: Array<{ a: number; b: number }> = [];
+
+  private divisionDeckN1: Array<{ dividend: number; divisor: number; expected: number }> = [];
+  private activeDivisionQueueN1: Array<{ dividend: number; divisor: number; expected: number }> = [];
+
+  private initExhaustiveMathDecks(): void {
+    // 1. Adição N1: 45 combinações comutativas únicas (1+1 a 9+9 com a <= b)
+    this.additionDeckN1 = [];
+    for (let a = 1; a <= 9; a++) {
+      for (let b = a; b <= 9; b++) {
+        this.additionDeckN1.push({ a, b });
+      }
+    }
+
+    // 2. Subtração N1: 81 combinações com redundância de ordem e polaridade (1-1 a 9-9)
+    this.subtractionDeckN1 = [];
+    for (let a = 1; a <= 9; a++) {
+      for (let b = 1; b <= 9; b++) {
+        if (a === b) {
+          this.subtractionDeckN1.push({
+            prompt: `${a} - ${b}`,
+            expected: 0,
+            hint: `Qualquer número subtraído dele mesmo resulta em 0.`,
+            strategy: `Fato nulo: ${a} - ${b} = 0.`
+          });
+        } else if (a > b) {
+          this.subtractionDeckN1.push({
+            prompt: `${a} - ${b}`,
+            expected: a - b,
+            hint: `Quanto falta de ${b} para chegar em ${a}?`,
+            strategy: `Subtração direta: ${a} - ${b} = ${a - b}.`
+          });
+        } else {
+          // a < b: varia entre a - b e -b + a
+          const isSigned = Math.random() > 0.5;
+          const prompt = isSigned ? `-${b} + ${a}` : `${a} - ${b}`;
+          const expected = a - b;
+          this.subtractionDeckN1.push({
+            prompt,
+            expected,
+            hint: `Atenção à polaridade: o valor negativo (-${b}) é maior que o positivo (+${a}).`,
+            strategy: `Resultado com sinal negativo: ${prompt} = ${expected}.`
+          });
+        }
+      }
+    }
+
+    // 3. Multiplicação N1: 45 combinações comutativas únicas (1x1 a 9x9 com a <= b)
+    this.multiplicationDeckN1 = [];
+    for (let a = 1; a <= 9; a++) {
+      for (let b = a; b <= 9; b++) {
+        this.multiplicationDeckN1.push({ a, b });
+      }
+    }
+
+    // 4. Divisão N1: 81 fatos exatos da tabuada inversa (dividendo até 81)
+    this.divisionDeckN1 = [];
+    for (let divisor = 1; divisor <= 9; divisor++) {
+      for (let expected = 1; expected <= 9; expected++) {
+        const dividend = divisor * expected;
+        this.divisionDeckN1.push({ dividend, divisor, expected });
+      }
+    }
+  }
+
+  private shuffleDeck<T>(array: T[]): T[] {
+    const copy = [...array];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
 
   /** ➕ ADIÇÃO (math-addition) */
   private generateAddition(level: ExerciseLevel): ExerciseQuestion {
@@ -151,15 +233,21 @@ export class AdaptiveEngineService {
     let timeLimitSeconds = 18;
 
     if (level === 1) {
-      // N1: Apenas 1 dígito (1 a 9). Soma <= 10. Tempo: 18 s.
-      const a = Math.floor(Math.random() * 5) + 1;
-      const maxB = 10 - a;
-      const b = Math.floor(Math.random() * maxB) + 1;
+      // N1: Baralho exaustivo comutativo de 1 dígito (45 fatos únicos: 1+1 a 9+9)
+      if (this.activeAdditionQueueN1.length === 0) {
+        if (this.additionDeckN1.length === 0) this.initExhaustiveMathDecks();
+        this.activeAdditionQueueN1 = this.shuffleDeck(this.additionDeckN1);
+      }
+      const item = this.activeAdditionQueueN1.pop()!;
+      // 50% de chance de exibir em ordem direta ou invertida sem repetir o par no ciclo
+      const showInverted = Math.random() > 0.5;
+      const a = showInverted ? item.b : item.a;
+      const b = showInverted ? item.a : item.b;
       prompt = `${a} + ${b}`;
       expected = a + b;
       timeLimitSeconds = 18;
-      hint = `Conte a partir do número maior (${Math.max(a, b)}).`;
-      strategy = `Recuperação direta de fatos básicos: ${a} + ${b} = ${expected}.`;
+      hint = `Propriedade comutativa: ${Math.min(a, b)} + ${Math.max(a, b)} = ${expected}.`;
+      strategy = `Recuperação direta do fato básico: ${a} + ${b} = ${expected}.`;
     } else if (level === 2) {
       // N2: 2 dígitos simples com 1 dígito (sem vai-um complexo). Tempo: 14 s.
       const tens = (Math.floor(Math.random() * 4) + 1) * 10;
@@ -240,14 +328,17 @@ export class AdaptiveEngineService {
     let timeLimitSeconds = 18;
 
     if (level === 1) {
-      // N1: Apenas 1 dígito (1 a 9). Subtrações diretas sem "pegar emprestado". Tempo: 18 s.
-      const b = Math.floor(Math.random() * 4) + 1;
-      const a = b + Math.floor(Math.random() * (9 - b)) + 1;
-      prompt = `${a} - ${b}`;
-      expected = a - b;
+      // N1: Baralho exaustivo com 81 combinações (1-1 a 9-9) com redundância e sinais
+      if (this.activeSubtractionQueueN1.length === 0) {
+        if (this.subtractionDeckN1.length === 0) this.initExhaustiveMathDecks();
+        this.activeSubtractionQueueN1 = this.shuffleDeck(this.subtractionDeckN1);
+      }
+      const item = this.activeSubtractionQueueN1.pop()!;
+      prompt = item.prompt;
+      expected = item.expected;
       timeLimitSeconds = 18;
-      hint = `Quanto falta de ${b} para chegar em ${a}?`;
-      strategy = `Subtração direta básica: ${a} - ${b} = ${expected}.`;
+      hint = item.hint;
+      strategy = item.strategy;
     } else if (level === 2) {
       // N2: 2 dígitos simples com 1 dígito (sem empréstimo complexo). Tempo: 14 s.
       const tens = (Math.floor(Math.random() * 4) + 1) * 10;
@@ -318,14 +409,20 @@ export class AdaptiveEngineService {
     let timeLimitSeconds = 18;
 
     if (level === 1) {
-      // N1: Tabuadas ultra-básicas de 1 e 2. Tempo: 18 s.
-      const a = Math.random() > 0.2 ? 2 : 1;
-      const b = Math.floor(Math.random() * 5) + 1;
+      // N1: Baralho exaustivo comutativo de 1 dígito (45 fatos únicos: 1x1 a 9x9)
+      if (this.activeMultiplicationQueueN1.length === 0) {
+        if (this.multiplicationDeckN1.length === 0) this.initExhaustiveMathDecks();
+        this.activeMultiplicationQueueN1 = this.shuffleDeck(this.multiplicationDeckN1);
+      }
+      const item = this.activeMultiplicationQueueN1.pop()!;
+      const showInverted = Math.random() > 0.5;
+      const a = showInverted ? item.b : item.a;
+      const b = showInverted ? item.a : item.b;
       prompt = `${a} × ${b}`;
       expected = a * b;
       timeLimitSeconds = 18;
-      hint = `Multiplicar por 2 é dobrar o número: ${b} + ${b}.`;
-      strategy = `Fato básico: ${a} × ${b} = ${expected}.`;
+      hint = `Propriedade comutativa: ${Math.min(a, b)} × ${Math.max(a, b)} = ${expected}.`;
+      strategy = `Tabuada fundamental: ${a} × ${b} = ${expected}.`;
     } else if (level === 2) {
       // N2: Tabuadas fáceis (x2, x5, x10). Tempo: 14 s.
       const bases = [2, 5, 10];
@@ -395,15 +492,17 @@ export class AdaptiveEngineService {
     let timeLimitSeconds = 18;
 
     if (level === 1) {
-      // N1: Divisões exatas simples por 2 com dividendo <= 10. Tempo: 18 s.
-      const quotient = Math.floor(Math.random() * 4) + 2; // 2, 3, 4, 5
-      const divisor = 2;
-      const dividend = quotient * divisor;
-      prompt = `${dividend} ÷ ${divisor}`;
-      expected = quotient;
+      // N1: Baralho exaustivo com 81 divisões exatas da tabuada (1÷1 até 81÷9)
+      if (this.activeDivisionQueueN1.length === 0) {
+        if (this.divisionDeckN1.length === 0) this.initExhaustiveMathDecks();
+        this.activeDivisionQueueN1 = this.shuffleDeck(this.divisionDeckN1);
+      }
+      const item = this.activeDivisionQueueN1.pop()!;
+      prompt = `${item.dividend} ÷ ${item.divisor}`;
+      expected = item.expected;
       timeLimitSeconds = 18;
-      hint = `Dividir por 2 é calcular a metade de ${dividend}.`;
-      strategy = `Metade exata: ${dividend} ÷ 2 = ${expected}.`;
+      hint = `${item.divisor} × ${item.expected} = ${item.dividend}.`;
+      strategy = `Divisão exata da tabuada: ${item.dividend} ÷ ${item.divisor} = ${expected}.`;
     } else if (level === 2) {
       // N2: Divisões exatas por 2, 5 e 10. Tempo: 14 s.
       const divisors = [2, 5, 10];
@@ -443,8 +542,8 @@ export class AdaptiveEngineService {
       prompt = `${dividend} ÷ ${divisor}`;
       expected = quotient;
       timeLimitSeconds = 6;
-      hint = `Estime o valor aproximado e ajuste pelo dígito final.`;
-      strategy = `Divisão de 2 algarismos: ${dividend} ÷ ${divisor} = ${expected}.`;
+      hint = `Aproxime por dezenas inteiras.`;
+      strategy = `Divisão de alta ordem: ${dividend} ÷ ${divisor} = ${expected}.`;
     }
 
     return {
@@ -1297,21 +1396,27 @@ export class AdaptiveEngineService {
   // Gera opções numéricas realistas para questões de múltipla escolha
   private generateNumericOptions(correct: number): number[] {
     const options = new Set<number>([correct]);
-    const offsets = [-10, 10, -2, 2, -1, 1, -5, 5, -3, 3, -20, 20];
+    const offsets = [-1, 1, -2, 2, -3, 3, -5, 5, -10, 10];
     
     let attempts = 0;
-    while (options.size < 4 && attempts < 30) {
+    while (options.size < 4 && attempts < 40) {
       attempts++;
       const offset = offsets[Math.floor(Math.random() * offsets.length)];
       const candidate = correct + offset;
-      if (candidate > 0 && candidate !== correct) {
+      // Se a resposta correta for não-negativa, prioriza opções >= 0
+      if (correct >= 0 && candidate < 0) continue;
+      if (candidate !== correct) {
         options.add(candidate);
       }
     }
 
+    let fallbackOffset = 1;
     while (options.size < 4) {
-      const candidate = Math.max(1, correct + (options.size * 2) - 1);
-      options.add(candidate);
+      const candidate = correct + fallbackOffset;
+      if (candidate !== correct) {
+        options.add(candidate);
+      }
+      fallbackOffset = fallbackOffset > 0 ? -fallbackOffset : -fallbackOffset + 1;
     }
 
     return Array.from(options).sort(() => Math.random() - 0.5);

@@ -55,6 +55,7 @@ export interface ExerciseAttempt {
   questionPrompt?: string;
   explanationStrategy?: string;
   isTimeout?: boolean;
+  unitId?: FocusUnitId;
   knowledgeId?: string;
   mathDomain?: 'ADDITION' | 'SUBTRACTION' | 'MULTIPLICATION' | 'DIVISION' | 'PERCENTAGE';
 }
@@ -152,16 +153,31 @@ export interface TestAttemptRecord {
   responseTimeMs: number;
 }
 
+export interface SessionSummaryRecord {
+  sessionId: string;
+  timestamp: number;
+  totalQuestions: number;      // ex: 20
+  correctCount: number;        // ex: 19
+  accuracyPercentage: number;  // ex: 95
+  averageResponseTimeMs: number;
+  level: ExerciseLevel;
+  source: 'FOCAL' | 'GENERAL_BLOCK';
+}
+
 export interface TestProgressionState {
   unitId: FocusUnitId;
   currentLevel: ExerciseLevel;
-  recentAttempts: TestAttemptRecord[]; // últimas até 20 tentativas no nível atual
+  recentAttempts: TestAttemptRecord[]; // histórico de tentativas para micro-análise
   totalAttemptsAtLevel: number;
   correctCountAtLevel: number;
-  accuracyPercentage: number; // 0 a 100
-  lastTrainedAt: number;      // timestamp da última tentativa desta unidade
+  accuracyPercentage: number; // 0 a 100 (média ponderada das sessões recentes)
+  lastTrainedAt: number;      // timestamp da última tentativa/sessão desta unidade
   promotedAt?: number;
-  gracePeriodAttemptsLeft: number; // 10 tentativas de adaptação ao subir de nível
+  gracePeriodAttemptsLeft: number;
+  // Sistema de promoção por 50 sessões consistentes:
+  recentSessions: SessionSummaryRecord[]; // até 50 sessões no nível atual
+  totalSessionsAtLevel: number;
+  accumulatedQuestionsBuffer?: { correct: number; total: number }; // acúmulo de questões do Treino Geral (a cada 20 -> 1 sessão)
 }
 
 // ── Sessão de Foco (agrupa unidades relacionadas) ────────────────────────────
@@ -187,6 +203,7 @@ export interface PlayerOverallProgression {
 export interface FocalWorkoutConfig {
   unitIds: FocusUnitId[];       // 1 unit = foco; vários = sessão
   sessionId?: string;           // ID da sessão pai (se vier de uma sessão)
-  durationMinutes: 2 | 5 | 10;
+  questionCount?: number;       // Padrão: 20 questões
+  durationMinutes?: 2 | 5 | 10; // Retrocompatibilidade opcional
   level?: ExerciseLevel;        // Força nível específico (null = usa o atual de cada unidade)
 }

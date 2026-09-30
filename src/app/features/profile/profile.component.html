@@ -34,22 +34,11 @@
 
     <div class="setting-row">
       <div class="setting-text">
-        <span class="setting-name">Meta Diária Padrão</span>
-        <span class="setting-desc">Duração alvo dos treinos diários</span>
+        <span class="setting-name">Formato dos Treinos</span>
+        <span class="setting-desc">Treino Diário Geral: 40 questões • Treinos Focais: 20 questões</span>
       </div>
-      <div class="duration-toggles">
-        <button 
-          class="pill-toggle" 
-          [class.active]="storage.profileSignal().targetMinutes === 3"
-          (click)="setTargetMinutes(3)">3 min</button>
-        <button 
-          class="pill-toggle" 
-          [class.active]="storage.profileSignal().targetMinutes === 8"
-          (click)="setTargetMinutes(8)">8 min</button>
-        <button 
-          class="pill-toggle" 
-          [class.active]="storage.profileSignal().targetMinutes === 15"
-          (click)="setTargetMinutes(15)">15 min</button>
+      <div class="format-badge-pill">
+        <span class="badge badge-fox">20Q / 40Q Padrão</span>
       </div>
     </div>
 

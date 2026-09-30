@@ -34,7 +34,8 @@ export interface FocusUnitRowItem {
   levelTitle: string;
   stars: boolean[];
   accuracy: number;
-  attemptsCount: number;
+  sessionsCount: number;
+  recentSessionsCount: number;
   isBottleneck: boolean;
   isPeak: boolean;
   isDecayWarning: boolean;
@@ -49,6 +50,9 @@ export interface ModalTarget {
   session?: FocusSession;
   state?: TestProgressionState;
   level: number;
+  levelTitle: string;
+  sessionsCount: number;
+  accuracy: number;
 }
 
 @Component({
@@ -66,17 +70,10 @@ export class FocusComponent implements OnInit {
 
   public isLoading = signal<boolean>(true);
   public isStarting = signal<boolean>(false);
-  public selectedDuration = signal<2 | 5 | 10>(5);
   public modalTarget = signal<ModalTarget | null>(null);
 
   // Controle de expansão das sessões (minimizadas por padrão)
   public expandedSessions = signal<Record<string, boolean>>({});
-
-  public readonly DURATION_OPTIONS: Array<{ minutes: 2 | 5 | 10; label: string; sublabel: string; questions: number; isRecommended?: boolean }> = [
-    { minutes: 2,  label: '2 min',  sublabel: '6 questões • Aquecimento rápido',         questions: 6  },
-    { minutes: 5,  label: '5 min',  sublabel: '12 questões • Treino padrão de foco',     questions: 12, isRecommended: true },
-    { minutes: 10, label: '10 min', sublabel: '20 questões • Janela de promoção (N1→N5)', questions: 20 }
-  ];
 
   public overallProgression = computed(() => this.progression.getOverallProgression());
 
@@ -121,13 +118,17 @@ export class FocusComponent implements OnInit {
           }
         }
 
+        const sessionsCount = state.totalSessionsAtLevel || 0;
+        const recentSessionsCount = state.recentSessions?.length || 0;
+
         return {
           meta,
           state,
           levelTitle: this.progression.getLevelFullLabel(state.currentLevel),
           stars: uStars,
           accuracy: state.accuracyPercentage,
-          attemptsCount: state.recentAttempts.length,
+          sessionsCount,
+          recentSessionsCount,
           isBottleneck,
           isPeak,
           isDecayWarning: isDecay,
@@ -137,7 +138,7 @@ export class FocusComponent implements OnInit {
         };
       });
 
-      const trained = units.filter(u => u.state.lastTrainedAt > 0 || u.state.totalAttemptsAtLevel > 0);
+      const trained = units.filter(u => u.state.lastTrainedAt > 0 || u.state.totalSessionsAtLevel > 0 || u.state.totalAttemptsAtLevel > 0);
       const trainedCount = trained.length;
       const averageAccuracy = trainedCount > 0
         ? Math.round(trained.reduce((acc, u) => acc + u.accuracy, 0) / trainedCount)
@@ -197,7 +198,7 @@ export class FocusComponent implements OnInit {
     return this.expandedSessions()[sessionId] ?? false;
   }
 
-  // ── Modal de Duração e Desafio ─────────────────────────────────────────────
+  // ── Modal de Início do Desafio (Padrão 20 Questões) ────────────────────────
   openUnitModal(meta: FocusUnitMeta, event?: Event): void {
     if (event) event.stopPropagation();
     const state = this.progression.getState(meta.unitId);
@@ -205,26 +206,34 @@ export class FocusComponent implements OnInit {
       type: 'unit',
       meta,
       state,
-      level: state.currentLevel
+      level: state.currentLevel,
+      levelTitle: this.progression.getLevelFullLabel(state.currentLevel),
+      sessionsCount: state.totalSessionsAtLevel || 0,
+      accuracy: state.accuracyPercentage
     });
   }
 
   openSessionModal(session: FocusSession, event?: Event): void {
     if (event) event.stopPropagation();
     const avgLevel = this.progression.getSessionLevel(session);
+    const states = session.unitIds.map(uid => this.progression.getState(uid));
+    const totalSessions = Math.round(states.reduce((acc, s) => acc + (s.totalSessionsAtLevel || 0), 0) / states.length);
+    const avgAcc = states.length > 0
+      ? Math.round(states.reduce((acc, s) => acc + s.accuracyPercentage, 0) / states.length)
+      : 0;
+
     this.modalTarget.set({
       type: 'session',
       session,
-      level: Math.round(avgLevel)
+      level: Math.round(avgLevel),
+      levelTitle: this.progression.getLevelFullLabel(avgLevel),
+      sessionsCount: totalSessions,
+      accuracy: avgAcc
     });
   }
 
   closeModal(): void {
     this.modalTarget.set(null);
-  }
-
-  selectDuration(minutes: 2 | 5 | 10): void {
-    this.selectedDuration.set(minutes);
   }
 
   async startModalWorkout(): Promise<void> {
@@ -237,13 +246,15 @@ export class FocusComponent implements OnInit {
     if (target.type === 'unit' && target.meta) {
       config = {
         unitIds: [target.meta.unitId],
-        durationMinutes: this.selectedDuration()
+        durationMinutes: 5,
+        questionCount: 20
       };
     } else if (target.type === 'session' && target.session) {
       config = {
         unitIds: target.session.unitIds,
         sessionId: target.session.id,
-        durationMinutes: this.selectedDuration()
+        durationMinutes: 5,
+        questionCount: 20
       };
     } else {
       this.isStarting.set(false);

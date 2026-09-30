@@ -34,9 +34,6 @@ export class ProfileComponent {
     }
   }
 
-  public async setTargetMinutes(mins: number): Promise<void> {
-    await this.storage.updateProfile({ targetMinutes: mins });
-  }
 
   public async exportBackup(): Promise<void> {
     const json = await this.storage.exportAllData();

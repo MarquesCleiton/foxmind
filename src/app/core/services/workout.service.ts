@@ -109,14 +109,14 @@ export class WorkoutService {
   private reviewingErrorIndex = 0;
   private consecutiveErrors = 0;
 
-  // Inicia o Treino Diário
-  public startDailyWorkout(targetMinutes?: number): void {
-    const mins = targetMinutes ?? this.storage.profileSignal().targetMinutes ?? 8;
+  // Inicia o Treino Diário Geral (40 Questões • 10 por área)
+  public async startDailyWorkout(): Promise<void> {
+    await this.progression.init();
     this.activeMathDomain.set(null);
     this.isFocalWorkout.set(false);
     this.focalWorkoutConfig.set(null);
     this.levelUpEvents.set([]);
-    this.selectedMinutes.set(mins);
+    this.selectedMinutes.set(10);
     this.sessionId = 'sesh-' + Date.now().toString(36);
     this.sessionAttempts = [];
     this.pendingErrors = [];
@@ -130,8 +130,15 @@ export class WorkoutService {
       (profile.cognitiveScores.calculation + profile.cognitiveScores.memory + profile.cognitiveScores.attention) / 3
     ) || 40;
 
-    // Montar fila de exercícios da sessão diária proporcional ao tempo
-    this.questionsQueue = this.buildSessionQueue(mins);
+    // Montar fila de 40 questões balanceadas (10 Cálculo, 10 Memória, 10 Atenção, 10 Lógica)
+    const plan = this.progression.buildGeneralWorkoutPlan(40);
+    this.sessionExerciseTypes = [];
+    this.questionsQueue = plan.map(({ unitId, level }) => {
+      const q = this.engine.generateQuestionForUnit(unitId, level);
+      this.sessionExerciseTypes.push(q.type);
+      return q;
+    });
+
     this.totalQuestionsCount.set(this.questionsQueue.length);
     this.currentQuestionIndex.set(0);
     this.sessionProgressPercent.set(0);
@@ -141,13 +148,13 @@ export class WorkoutService {
     this.saveActiveSessionToStorage();
   }
 
-  // Inicia Treino Focado em um Módulo de Matemática Mental (Sec. 2)
-  public startMathDomainWorkout(domain: MathDomain | 'MIXED', targetMinutes = 3): void {
+  // Inicia Treino Focado em um Módulo de Matemática Mental (20 Questões)
+  public startMathDomainWorkout(domain: MathDomain | 'MIXED'): void {
     this.activeMathDomain.set(domain);
     this.isFocalWorkout.set(false);
     this.focalWorkoutConfig.set(null);
     this.levelUpEvents.set([]);
-    this.selectedMinutes.set(targetMinutes);
+    this.selectedMinutes.set(5);
     this.sessionId = 'math-' + domain.toLowerCase() + '-' + Date.now().toString(36);
     this.sessionAttempts = [];
     this.pendingErrors = [];
@@ -158,7 +165,7 @@ export class WorkoutService {
     const profile = this.storage.profileSignal();
     this.currentDifficulty = profile.cognitiveScores.calculation || 40;
 
-    const count = targetMinutes <= 3 ? 6 : (targetMinutes <= 8 ? 12 : 20);
+    const count = 20;
     const queue: ExerciseQuestion[] = [];
     this.sessionExerciseTypes = [];
     for (let i = 0; i < count; i++) {
@@ -175,14 +182,14 @@ export class WorkoutService {
     this.saveActiveSessionToStorage();
   }
 
-  // Inicia Treino Focal (Nova Central de Treinos) — suporta 1 ou várias unidades de foco
+  // Inicia Treino Focal (Central de Treinos) — 20 questões por padrão (100% de foco)
   public async startFocalWorkout(config: FocalWorkoutConfig): Promise<void> {
     await this.progression.init();
     this.activeMathDomain.set(null);
     this.isFocalWorkout.set(true);
     this.focalWorkoutConfig.set(config);
     this.levelUpEvents.set([]);
-    this.selectedMinutes.set(config.durationMinutes);
+    this.selectedMinutes.set(config.durationMinutes || 5);
     this.sessionId = 'focal-' + (config.sessionId ?? config.unitIds[0]) + '-' + Date.now().toString(36);
     this.sessionAttempts = [];
     this.pendingErrors = [];
@@ -191,8 +198,8 @@ export class WorkoutService {
     this.sessionStartTime = Date.now();
     this.currentDifficulty = 50;
 
-    const totalQ = this.progression.questionsForFocalDuration(config.durationMinutes);
-    const plan = this.progression.buildTrainingPlan(config.unitIds, totalQ);
+    const totalQ = config.questionCount ?? 20;
+    const plan = this.progression.buildFocalWorkoutPlan(config.unitIds, totalQ, config.level);
 
     this.sessionExerciseTypes = [];
     const queue: ExerciseQuestion[] = plan.map(({ unitId, level }) => {
@@ -295,7 +302,8 @@ export class WorkoutService {
       timestamp: Date.now(),
       questionPrompt: q.prompt,
       explanationStrategy: q.explanationStrategy,
-      isTimeout
+      isTimeout,
+      unitId: (q.unitId as FocusUnitId | undefined)
     };
 
     this.sessionAttempts.push(attempt);
@@ -474,6 +482,50 @@ export class WorkoutService {
 
     await this.storage.recordSessionComplete(sessionData);
 
+    // Processamento de progressão de nível (Focal vs Geral)
+    if (!isImpulsive && totalQuestions >= 10) {
+      if (this.isFocalWorkout() && this.focalWorkoutConfig()) {
+        const config = this.focalWorkoutConfig()!;
+        if (config.unitIds.length === 1) {
+          const unitId = config.unitIds[0];
+          const sessionRecord = {
+            sessionId: this.sessionId,
+            timestamp: Date.now(),
+            totalQuestions,
+            correctCount,
+            accuracyPercentage,
+            averageResponseTimeMs: avgResponseTimeMs,
+            level: this.progression.getLevel(unitId),
+            source: 'FOCAL' as const
+          };
+          const promoResult = await this.progression.recordCompletedSession(unitId, sessionRecord);
+          if (promoResult.levelUp) {
+            const current = this.levelUpEvents();
+            const unitMeta = this.progression.getUnitMeta(unitId);
+            this.levelUpEvents.set([...current, { type: unitMeta.exerciseType, newLevel: promoResult.newLevel }]);
+          }
+        } else {
+          // Se foi treino focal com múltiplas unidades, acumula blocos
+          const promoEvents = await this.progression.recordGeneralWorkoutBlocks(this.sessionAttempts);
+          if (promoEvents.length > 0) {
+            const current = this.levelUpEvents();
+            this.levelUpEvents.set([...current, ...promoEvents]);
+          }
+        }
+      } else {
+        // Treino Geral Diário:
+        // 1. Ativa Super Escudo Diário em todas as 19 unidades (evita decaimento por inatividade)
+        await this.progression.applySuperShield();
+
+        // 2. Acumula blocos de 20 questões completadas para creditar sessões
+        const promoEvents = await this.progression.recordGeneralWorkoutBlocks(this.sessionAttempts);
+        if (promoEvents.length > 0) {
+          const current = this.levelUpEvents();
+          this.levelUpEvents.set([...current, ...promoEvents]);
+        }
+      }
+    }
+
     // Atualizar Recordes Pessoais (Apenas para tentativas com engajamento legítimo)
     if (!isImpulsive) {
       for (const cat of categoriesTrained) {
@@ -557,7 +609,7 @@ export class WorkoutService {
         category: 'ALL',
         icon: '🚀',
         title: 'Próximo Desafio',
-        detail: 'Sua precisão foi máxima! No próximo treino, experimente aumentar o tempo para 15 minutos para exercitar a resistência sob maior volume.'
+        detail: 'Sua precisão foi máxima! Mantenha a consistência diária para avançar de nível rumo a Mestre.'
       });
     }
 
@@ -681,9 +733,10 @@ export class WorkoutService {
       // Reconstruir fila de questões respeitando o tipo de treino:
       let queue: ExerciseQuestion[] = [];
       if (saved.isFocalWorkout && saved.focalWorkoutConfig) {
-        const plan = this.progression.buildTrainingPlan(
+        const plan = this.progression.buildFocalWorkoutPlan(
           saved.focalWorkoutConfig.unitIds,
-          saved.totalQuestionsCount
+          saved.totalQuestionsCount,
+          saved.focalWorkoutConfig.level
         );
         queue = plan.map(({ unitId, level }) => this.engine.generateQuestionForUnit(unitId, level));
       } else if (saved.activeMathDomain) {
@@ -693,7 +746,8 @@ export class WorkoutService {
       } else if (saved.questionsQueue && saved.questionsQueue.length === saved.totalQuestionsCount) {
         queue = [...saved.questionsQueue];
       } else {
-        queue = this.buildSessionQueue(saved.selectedMinutes || 8);
+        const plan = this.progression.buildGeneralWorkoutPlan(40);
+        queue = plan.map(({ unitId, level }) => this.engine.generateQuestionForUnit(unitId, level));
       }
       this.questionsQueue = queue;
 
