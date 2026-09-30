@@ -67,9 +67,18 @@ export class ProfileComponent {
   }
 
   public async resetData(): Promise<void> {
-    if (confirm('Tem certeza de que deseja redefinir todo o seu progresso? Esta ação não pode ser desfeita.')) {
-      await this.storage.resetAllData();
-      alert('Dados redefinidos com sucesso.');
+    if (confirm('Tem certeza de que deseja redefinir todo o seu progresso? O banco de dados local será totalmente apagado e recriado do zero para eliminar qualquer conflito.')) {
+      try {
+        await this.storage.forceResetDatabase();
+        alert('Banco de dados apagado e recriado com sucesso! A página será reiniciada para sincronização completa.');
+        window.location.reload();
+      } catch (err) {
+        console.error('Falha ao redefinir banco:', err);
+        if (typeof window !== 'undefined' && window.indexedDB) {
+          window.indexedDB.deleteDatabase('FoxMindDB');
+        }
+        window.location.reload();
+      }
     }
   }
 }

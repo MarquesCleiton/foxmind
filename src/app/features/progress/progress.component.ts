@@ -410,12 +410,17 @@ export class ProgressComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
-    await this.progression.init();
-    const sessions = await this.storage.getRecentSessions(7);
-    this.recentSessions.set(sessions);
-    const records = await this.storage.getRecords();
-    this.personalRecords.set(records);
-    this.isLoading.set(false);
+    try {
+      await this.progression.init();
+      const sessions = await this.storage.getRecentSessions(7);
+      this.recentSessions.set(sessions);
+      const records = await this.storage.getRecords();
+      this.personalRecords.set(records);
+    } catch (e) {
+      console.error('Erro na inicialização de Progresso:', e);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   public setFilter(filterId: string): void {

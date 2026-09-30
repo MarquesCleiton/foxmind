@@ -41,12 +41,17 @@ export class FoxMindDatabase extends Dexie {
     this.version(3).stores({
       testProgression: 'type, currentLevel, lastTrainedAt, accuracyPercentage'
     });
-    // v4: chave primária correta = 'unitId' (FocusUnitId — 19 unidades granulares)
+    // v4: tentativa anterior
     this.version(4).stores({
       testProgression: 'unitId, currentLevel, lastTrainedAt, accuracyPercentage'
-    }).upgrade(tx => {
-      // Limpa registros antigos com chave 'type' — serão recriados na próxima inicialização
-      return tx.table('testProgression').clear();
+    });
+    // v5: Deleta a tabela antiga para desvincular a chave primária 'type' no IndexedDB
+    this.version(5).stores({
+      testProgression: null
+    });
+    // v6: Recria a tabela testProgression com 'unitId' como chave primária definitiva
+    this.version(6).stores({
+      testProgression: 'unitId, currentLevel, lastTrainedAt, accuracyPercentage'
     });
   }
 }
@@ -91,6 +96,7 @@ export class StorageService {
 
   private async initDatabase(): Promise<void> {
     try {
+      await this.db.open();
       let profile = await this.db.profile.get(1);
       if (!profile) {
         profile = { ...DEFAULT_PROFILE };
@@ -99,7 +105,12 @@ export class StorageService {
       this.profileSignal.set(profile);
       this.isReady.set(true);
     } catch (err) {
-      console.error('Erro ao inicializar FoxMindDB:', err);
+      console.warn('Erro/Conflito ao abrir FoxMindDB. Executando recriação limpa:', err);
+      try {
+        await this.forceResetDatabase();
+      } catch (inner) {
+        console.error('Falha crítica ao recriar banco:', inner);
+      }
     }
   }
 
@@ -325,13 +336,15 @@ export class StorageService {
     const sessions = await this.db.sessions.toArray();
     const records = await this.db.records.toArray();
     const mathMastery = await this.db.mathMastery.toArray();
+    const testProgression = await this.db.testProgression.toArray();
     const exportObject = {
       foxmind_version: '2.0',
       exportedAt: new Date().toISOString(),
       profile,
       sessions,
       records,
-      mathMastery
+      mathMastery,
+      testProgression
     };
     return JSON.stringify(exportObject, null, 2);
   }
@@ -352,6 +365,9 @@ export class StorageService {
       if (data.mathMastery && Array.isArray(data.mathMastery)) {
         await this.db.mathMastery.bulkPut(data.mathMastery);
       }
+      if (data.testProgression && Array.isArray(data.testProgression)) {
+        await this.db.testProgression.bulkPut(data.testProgression);
+      }
       return true;
     } catch (e) {
       console.error('Falha ao importar dados:', e);
@@ -360,14 +376,56 @@ export class StorageService {
   }
 
   public async resetAllData(): Promise<void> {
-    await this.db.sessions.clear();
-    await this.db.attempts.clear();
-    await this.db.records.clear();
-    await this.db.errorBank.clear();
-    await this.db.mathMastery.clear();
-    await this.db.testProgression.clear();
-    await this.db.profile.put(DEFAULT_PROFILE);
-    this.profileSignal.set(DEFAULT_PROFILE);
+    await this.forceResetDatabase();
+  }
+
+  /**
+   * Força a exclusão física do banco IndexedDB e recria uma instância 100% limpa,
+   * resolvendo qualquer conflito de versão ou schema corrompido de versões anteriores.
+   */
+  public async forceResetDatabase(): Promise<void> {
+    console.info('Iniciando limpeza forçada do banco FoxMindDB...');
+    try {
+      if (this.db && this.db.isOpen()) {
+        this.db.close();
+      }
+      await Dexie.delete('FoxMindDB');
+    } catch (dexieErr) {
+      console.warn('Erro ao deletar via Dexie, tentando fallback nativo:', dexieErr);
+    }
+
+    if (typeof window !== 'undefined' && window.indexedDB) {
+      try {
+        await new Promise<void>((resolve) => {
+          const req = window.indexedDB.deleteDatabase('FoxMindDB');
+          req.onsuccess = () => resolve();
+          req.onerror = () => resolve();
+          req.onblocked = () => {
+            console.warn('IndexedDB deleteDatabase bloqueado temporariamente.');
+            resolve();
+          };
+        });
+      } catch (idbErr) {
+        console.warn('Fallback deleteDatabase erro:', idbErr);
+      }
+    }
+
+    try {
+      localStorage.removeItem('foxmind_active_workout');
+      sessionStorage.clear();
+    } catch (_) {}
+
+    // Recria a instância e banco zerado
+    this.db = new FoxMindDatabase();
+    await this.db.open();
+    let profile = await this.db.profile.get(1);
+    if (!profile) {
+      profile = { ...DEFAULT_PROFILE };
+      await this.db.profile.add(profile);
+    }
+    this.profileSignal.set(profile);
+    this.isReady.set(true);
+    console.info('FoxMindDB recriado do zero com sucesso!');
   }
 
   // ==================== PROGRESSÃO DE TESTES (Níveis 1 a 5 por Unidade de Foco) ====================

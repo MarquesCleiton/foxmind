@@ -117,21 +117,40 @@ export class ProgressionEngineService {
   // ── Inicialização ──────────────────────────────────────────────────────────
   async init(): Promise<void> {
     if (this.isLoaded) return;
-    const persisted = await this.storage.getAllTestProgressions();
-    const persistedMap = new Map(persisted.map(s => [s.unitId, s]));
+    try {
+      const persisted = await this.storage.getAllTestProgressions();
+      const persistedMap = new Map(persisted.map(s => [s.unitId, s]));
 
-    for (const unitId of ALL_FOCUS_UNIT_IDS) {
-      if (persistedMap.has(unitId)) {
-        this.states.set(unitId, persistedMap.get(unitId)!);
-      } else {
-        const fresh = this.createFreshState(unitId);
-        this.states.set(unitId, fresh);
-        await this.storage.saveTestProgression(fresh);
+      for (const unitId of ALL_FOCUS_UNIT_IDS) {
+        if (persistedMap.has(unitId)) {
+          this.states.set(unitId, persistedMap.get(unitId)!);
+        } else {
+          const fresh = this.createFreshState(unitId);
+          this.states.set(unitId, fresh);
+          await this.storage.saveTestProgression(fresh);
+        }
+      }
+
+      await this.evaluateDecayForAll();
+      this.isLoaded = true;
+    } catch (err) {
+      console.warn('Conflito de versão ou schema no banco detectado. Executando auto-recuperação...', err);
+      try {
+        await this.storage.forceResetDatabase();
+        for (const unitId of ALL_FOCUS_UNIT_IDS) {
+          const fresh = this.createFreshState(unitId);
+          this.states.set(unitId, fresh);
+          await this.storage.saveTestProgression(fresh);
+        }
+        this.isLoaded = true;
+      } catch (recoveryErr) {
+        console.error('Falha na persistência. Ativando fallback resiliente em memória:', recoveryErr);
+        for (const unitId of ALL_FOCUS_UNIT_IDS) {
+          this.states.set(unitId, this.createFreshState(unitId));
+        }
+        this.isLoaded = true;
       }
     }
-
-    await this.evaluateDecayForAll();
-    this.isLoaded = true;
   }
 
   private createFreshState(unitId: FocusUnitId): TestProgressionState {

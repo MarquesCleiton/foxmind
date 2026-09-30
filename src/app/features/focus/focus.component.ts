@@ -158,8 +158,13 @@ export class FocusComponent implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
-    await this.progression.init();
-    this.isLoading.set(false);
+    try {
+      await this.progression.init();
+    } catch (e) {
+      console.error('Erro na inicialização de Foco:', e);
+    } finally {
+      this.isLoading.set(false);
+    }
 
     // Deep-link: ?unit=math-addition ou ?session=calculo
     const unitParam = this.route.snapshot.queryParamMap.get('unit') as FocusUnitId | null;
